@@ -7,10 +7,11 @@
 <meta name="description" content="김지헌의 포트폴리오 — 데이터 분석 · 통계 · AI · 앱 개발">
 <meta property="og:title" content="김지헌 | Portfolio">
 <meta property="og:description" content="데이터에 색을 입히고, 생각을 물건으로 만듭니다.">
-<meta name="theme-color" content="#07090C">
+<meta name="theme-color" content="#0A0B0D">
 <style>html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
+<a class="skip" href="#top">본문으로 건너뛰기</a>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap">
@@ -413,6 +414,12 @@ footer{font-size:12.5px;color:#9AA4AE}
 /* contact */
 .contact .btn.primary{background:var(--paper);color:#0A0B0D}
 @media (max-width:760px){ .timeline li{padding:20px 0} h2.big{font-size:clamp(36px,11vw,56px)} }
+
+/* guidelines pass */
+.skip{position:fixed;left:16px;top:-64px;z-index:120;padding:10px 16px;border-radius:999px;background:var(--paper);color:#0A0B0D;font:500 14px/1 var(--f-body);text-decoration:none;transition:top .2s ease}
+.skip:focus-visible{top:16px}
+section[id]{scroll-margin-top:88px}
+a,button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 </style>
 
 <div id="loader" aria-hidden="true">
@@ -447,14 +454,14 @@ footer{font-size:12.5px;color:#9AA4AE}
     </div>
   </section>
 
-  <section class="quote" data-shape="halo" data-pal="mid" aria-label="좌우명">
+  <section class="quote" data-shape="globe" data-pal="mid" aria-label="좌우명">
     <blockquote data-reveal id="q-text"></blockquote>
     <p data-reveal id="q-ko"></p>
     <cite data-reveal id="q-by"></cite>
   </section>
 
 
-  <section id="about" data-shape="wave" data-pal="mid" aria-label="About me">
+  <section id="about" data-shape="globe" data-pal="mid" aria-label="About me">
     <p class="kicker">About me.</p>
     <div class="about-wrap">
       <div>
@@ -476,7 +483,7 @@ footer{font-size:12.5px;color:#9AA4AE}
     </div>
   </section>
 
-  <section id="projects" class="projects" data-shape="spiral" data-pal="eme" aria-label="Projects">
+  <section id="projects" class="projects" data-shape="bars" data-pal="eme" aria-label="Projects">
     <div class="head">
       <div><p class="kicker" style="margin-bottom:18px">Efforts never betray.</p><h2 class="big">Things I <em>made.</em></h2></div>
       <span class="count" id="p-count"></span>
@@ -484,7 +491,7 @@ footer{font-size:12.5px;color:#9AA4AE}
     <div class="hwrap"><div class="track" id="track"></div></div>
   </section>
 
-  <section id="log" data-shape="helix" data-pal="eme" aria-label="Activity log">
+  <section id="log" data-shape="bars" data-pal="eme" aria-label="Activity log">
     <p class="kicker">Practice makes perfect.</p>
     <h2 class="big" data-reveal>Activity <em>log.</em></h2>
     <p class="sub" data-reveal style="margin-bottom:44px">혼자서도, 팀으로도 계속 도전하고 있습니다.</p>
@@ -502,7 +509,7 @@ footer{font-size:12.5px;color:#9AA4AE}
   </section>
 
 
-  <section id="contact" class="contact" data-shape="capsule" data-pal="eme" aria-label="Contact">
+  <section id="contact" class="contact" data-shape="globe" data-pal="eme" aria-label="Contact">
     <p class="kicker">Feel free to contact.</p>
     <h2 class="big" data-reveal>Let's find<br>your <em>color.</em></h2>
     <p class="sub" data-reveal id="c-text"></p>
@@ -551,9 +558,9 @@ const SWATCHES = [
 ];
 const swHex = n => (SWATCHES.find(s=>s.name===n) || SWATCHES[5]).hex;
 const PAL = {
-  glow:{accent:'#E3EBC8', glow:['#55634A','#1E3A6B','#C9D6A6'], dots:['#7E95A0','#C9D6A6','#E3EBC8','#9FB3C8']},
-  mid: {accent:'#BDC3C7', glow:['#33495D','#2C3D50','#4E6378'], dots:['#7E95A0','#BDC3C7','#ECF0F1','#5B7389']},
-  eme: {accent:'#8FB86C', glow:['#2D5A4A','#0D4C3C','#5E7F45'], dots:['#7AA05A','#A9C98C','#F4F1EB','#4E8A72']}
+  glow:{accent:'#E3EBC8', glow:['#55634A','#1E3A6B','#C9D6A6'], dots:['#8A939D','#C3C8CE','#EFE5C6','#D9CBA3']},
+  mid: {accent:'#BDC3C7', glow:['#33495D','#2C3D50','#4E6378'], dots:['#8A939D','#C3C8CE','#EFE5C6','#D9CBA3']},
+  eme: {accent:'#8FB86C', glow:['#2D5A4A','#0D4C3C','#5E7F45'], dots:['#8A939D','#C3C8CE','#EFE5C6','#D9CBA3']}
 };
 function lum(hex){ const n=parseInt(hex.slice(1),16); const c=[n>>16,(n>>8)&255,n&255].map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)}); return .2126*c[0]+.7152*c[1]+.0722*c[2]; }
 const inkOn = hex => lum(hex) > .35 ? '#0B0F13' : '#F4F6F7';
@@ -810,7 +817,7 @@ addEventListener('pointermove', e=>{ mouseX=e.clientX/innerWidth-.5; mouseY=e.cl
   let renderer; try{ renderer=new THREE.WebGLRenderer({canvas, antialias:true, alpha:true}); }catch(e){ return; }
   renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setClearColor(0x000000,0);
   const scene=new THREE.Scene(), cam=new THREE.PerspectiveCamera(45,1,.1,100); cam.position.z=6;
-  const small=innerWidth<760, N=small?2200:4400, rnd=Math.random;
+  const small=innerWidth<760, N=small?2600:5200, rnd=Math.random;
   const col=new THREE.Color();
   const palCol=(key,f)=>{ const d=PAL[key].dots; const x=Math.min(.999,Math.max(0,f))*(d.length-1), i=Math.floor(x); const a=new THREE.Color(d[i]), b=new THREE.Color(d[i+1]); return a.lerp(b,x-i); };
   function make(fn){ const P=new Float32Array(N*3), C=new Float32Array(N*3); for(let i=0;i<N;i++){ const o=fn(i); P[i*3]=o[0];P[i*3+1]=o[1];P[i*3+2]=o[2]; const c=palCol(o[3],o[4]); C[i*3]=c.r;C[i*3+1]=c.g;C[i*3+2]=c.b; } return {P,C}; }
@@ -834,14 +841,14 @@ addEventListener('pointermove', e=>{ mouseX=e.clientX/innerWidth-.5; mouseY=e.cl
       const o=i%7, cxs=[-1.3,-.6,.1,.8,1.4,-.2,.6][o], cys=[.2,-.35,.3,-.25,.15,-.1,.4][o], r=.28*Math.cbrt(rnd()), th=rnd()*Math.PI*2, ph=Math.acos(2*rnd()-1);
       return [cxs+r*Math.sin(ph)*Math.cos(th), cys+r*Math.sin(ph)*Math.sin(th), r*Math.cos(ph)*.9, 'eme', o/6]; })
   };
-  const DIM={globe:.75,halo:.45,wave:.32,bars:.4,spiral:.45,helix:.28,cube:.25,capsule:.5};
-  const OFFSET={globe:[1.6,.15],halo:[0,0],wave:[0,-.2],bars:[1.5,0],spiral:[0,0],helix:[0,0],cube:[1.7,0],eq:[1.8,0],capsule:[1.7,0]};
+  const DIM={globe:1,bars:.62,cube:.72};
+  const OFFSET={globe:[1.95,.1],bars:[1.95,-.1],cube:[1.95,0]};
   const pos=new Float32Array(SH.globe.P), cols=new Float32Array(SH.globe.C), draw=new Float32Array(pos);
   const speed=new Float32Array(N), phase=new Float32Array(N); for(let i=0;i<N;i++){ speed[i]=.025+rnd()*.05; phase[i]=rnd()*Math.PI*2; }
   const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(draw,3)); geo.setAttribute('color',new THREE.BufferAttribute(cols,3));
   const dot=document.createElement('canvas'); dot.width=dot.height=64; const dg=dot.getContext('2d'); const rg=dg.createRadialGradient(32,32,0,32,32,32);
   rg.addColorStop(0,'rgba(255,255,255,1)'); rg.addColorStop(.4,'rgba(255,255,255,.85)'); rg.addColorStop(1,'rgba(255,255,255,0)'); dg.fillStyle=rg; dg.fillRect(0,0,64,64);
-  const mat=new THREE.PointsMaterial({size:small?.045:.034, vertexColors:true, map:new THREE.CanvasTexture(dot), transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, opacity:.9});
+  const mat=new THREE.PointsMaterial({size:small?.05:.042, vertexColors:true, map:new THREE.CanvasTexture(dot), transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, opacity:.9});
   const pts=new THREE.Points(geo,mat); scene.add(pts);
   function size(){ renderer.setSize(innerWidth,innerHeight,false); cam.aspect=innerWidth/innerHeight; cam.position.z=innerWidth<760?8.5:6; cam.updateProjectionMatrix(); }
   size(); addEventListener('resize',size);
@@ -857,9 +864,9 @@ addEventListener('pointermove', e=>{ mouseX=e.clientX/innerWidth-.5; mouseY=e.cl
     }
     geo.attributes.position.needsUpdate=true; geo.attributes.color.needsUpdate=true;
     const off=OFFSET[activeShape]||[0,0], narrow=innerWidth<760;
-    ox+=((narrow?0:off[0])-ox)*.04; oy+=((narrow&&activeShape==='globe'?.9:off[1])-oy)*.04;
-    spin+= reduce?0:.004;
-    mat.opacity+=((DIM[activeShape]||.4)-mat.opacity)*.05;
+    ox+=((narrow?0:off[0])-ox)*.04; oy+=((narrow?(activeShape==='globe'?.9:.2):off[1])-oy)*.04;
+    spin+= reduce?0:.0025;
+    mat.opacity+=(((DIM[activeShape]||.4)*(narrow?.55:1))-mat.opacity)*.05;
     pts.position.set(ox,oy,0); spS+=(Math.sin(secProg*Math.PI*2)*.5-spS)*.06; const sc=1+kick*.12+spS*.1; pts.scale.set(sc,sc,sc);
     const flat=(activeShape==='eq'||activeShape==='halo');
     pts.rotation.y=(flat?Math.sin(t*.4)*.25:spin+sRot)+mouseX*.45;
