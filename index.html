@@ -365,7 +365,7 @@ body{line-height:1.72}
 .glows,.vignette{display:none}
 body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
   background:radial-gradient(60vmax 40vmax at 78% -8%, rgba(217,203,163,.09), transparent 70%)}
-#field{opacity:0}
+#field{opacity:.32}
 .grain{opacity:.045}
 /* type: one family, firmer weight, tighter tracking */
 .hero h1 .en{font-weight:600;letter-spacing:-.045em;line-height:.96;font-size:clamp(52px,9.2vw,148px)}
@@ -828,83 +828,78 @@ applyPalette('glow');
 /* ---------- WebGL particle field ---------- */
 let mouseX=0, mouseY=0;
 addEventListener('pointermove', e=>{ mouseX=e.clientX/innerWidth-.5; mouseY=e.clientY/innerHeight-.5; });
-(function box3d(){
+(function field(){
   if(!window.THREE) return;
   const canvas=$('#field');
   let renderer; try{ renderer=new THREE.WebGLRenderer({canvas, antialias:true, alpha:true}); }catch(e){ return; }
   renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setClearColor(0x000000,0);
-  renderer.outputEncoding=THREE.sRGBEncoding; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.1;
-  const scene=new THREE.Scene(), cam=new THREE.PerspectiveCamera(32,1,.1,100);
-  /* studio reflections: a dark room with a few soft light panels */
-  try{
-    const env=new THREE.Scene(); env.add(new THREE.Mesh(new THREE.BoxGeometry(30,30,30), new THREE.MeshBasicMaterial({color:0x040506, side:THREE.BackSide})));
-    const panel=(w,h,pos,col,k)=>{ const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h), new THREE.MeshBasicMaterial({color:new THREE.Color(col).multiplyScalar(k), side:THREE.DoubleSide})); m.position.set(pos[0],pos[1],pos[2]); m.lookAt(0,0,0); env.add(m); };
-    panel(10,6,[8,9,6],0xfff2dc,7); panel(3,14,[-11,3,2],0xaecbff,3); panel(14,2.5,[0,12,-4],0xffffff,4); panel(8,3,[0,-6,9],0xd9cba3,1.2);
-    const pm=new THREE.PMREMGenerator(renderer); scene.environment=pm.fromScene(env,.03).texture; pm.dispose();
-  }catch(e){}
-  const key=new THREE.DirectionalLight(0xfff0dc,1.0); key.position.set(4,6,5); scene.add(key); scene.add(new THREE.AmbientLight(0xffffff,.1));
-  /* rounded box with its vertices packed near the edges, so a handful of triangles stays smooth */
-  function axis(len,r,m){ const h=len/2, ix=h-r, a=[]; for(let k=m;k>=0;k--) a.push(-(ix+r*Math.sin(k/m*Math.PI/2))); for(let k=0;k<=m;k++) a.push(ix+r*Math.sin(k/m*Math.PI/2)); return a; }
-  function rbox(w,h,d,r){ r=Math.min(r,w/2-.002,h/2-.002,d/2-.002); const m=5, xs=axis(w,r,m), ys=axis(h,r,m), zs=axis(d,r,m), sw=xs.length-1, sh=ys.length-1, sd=zs.length-1;
-    const g=new THREE.BoxGeometry(w,h,d,sw,sh,sd), pos=g.attributes.position, nor=g.attributes.normal, v=new THREE.Vector3(), c=new THREE.Vector3(), n=new THREE.Vector3(), ix=w/2-r, iy=h/2-r, iz=d/2-r;
-    for(let i=0;i<pos.count;i++){ v.fromBufferAttribute(pos,i);
-      v.x=xs[Math.round((v.x/w+.5)*sw)]; v.y=ys[Math.round((v.y/h+.5)*sh)]; v.z=zs[Math.round((v.z/d+.5)*sd)];
-      c.set(Math.max(-ix,Math.min(ix,v.x)), Math.max(-iy,Math.min(iy,v.y)), Math.max(-iz,Math.min(iz,v.z))); n.copy(v).sub(c);
-      if(n.lengthSq()<1e-10) n.fromBufferAttribute(nor,i); else n.normalize();
-      v.copy(c).addScaledVector(n,r); pos.setXYZ(i,v.x,v.y,v.z); nor.setXYZ(i,n.x,n.y,n.z); }
-    pos.needsUpdate=true; nor.needsUpdate=true; return g; }
-  const body=new THREE.MeshStandardMaterial({color:0x17191c, metalness:.9, roughness:.32});
-  const lidM=new THREE.MeshStandardMaterial({color:0x1d2024, metalness:.9, roughness:.26});
-  const trimM=new THREE.MeshStandardMaterial({color:0xD9CBA3, metalness:1, roughness:.22});
-  const W=2, D=2, H=1, T=.09, group=new THREE.Group(); scene.add(group);
-  const bottom=new THREE.Mesh(rbox(W,.1,D,.04),body), front=new THREE.Mesh(rbox(W,H-.08,T,.03),body), back=new THREE.Mesh(rbox(W,H-.08,T,.03),body),
-        left=new THREE.Mesh(rbox(T,H-.08,D-2*T,.03),body), right=new THREE.Mesh(rbox(T,H-.08,D-2*T,.03),body);
-  group.add(bottom,front,back,left,right);
-  const hinge=new THREE.Group(); group.add(hinge);
-  const lid=new THREE.Mesh(rbox(W+.06,.16,D+.06,.06),lidM); lid.position.set(0,.08,D/2); hinge.add(lid);
-  const trim=new THREE.Mesh(rbox(W-.7,.03,D-.7,.012),trimM); trim.position.set(0,.17,D/2); hinge.add(trim);
-  /* today's colour lives inside */
-  const gc=new THREE.Color(TODAY.hex), hsl={}; gc.getHSL(hsl); if(hsl.s<.12) gc.set(0xF1E8CF); else gc.setHSL(hsl.h, Math.max(hsl.s,.5), .62);
-  const coreM=new THREE.MeshBasicMaterial({color:gc.clone()}), core=new THREE.Mesh(new THREE.SphereGeometry(.34,32,24),coreM); group.add(core);
-  const lamp=new THREE.PointLight(gc,0,7,1.6); lamp.position.set(0,.15,0); group.add(lamp);
-  const gt=document.createElement('canvas'); gt.width=gt.height=128; const g2=gt.getContext('2d'), rg=g2.createRadialGradient(64,64,0,64,64,64);
-  rg.addColorStop(0,'rgba(255,255,255,1)'); rg.addColorStop(.35,'rgba(255,255,255,.35)'); rg.addColorStop(1,'rgba(255,255,255,0)'); g2.fillStyle=rg; g2.fillRect(0,0,128,128);
-  const glow=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(gt), color:gc, transparent:true, opacity:0, blending:THREE.AdditiveBlending, depthWrite:false})); glow.position.set(0,.5,0); group.add(glow);
-  let halfW=4, narrow=false;
-  function size(){ renderer.setSize(innerWidth,innerHeight,false); cam.aspect=innerWidth/innerHeight; narrow=innerWidth<760;
-    cam.position.set(0,1.6,narrow?11:9); cam.lookAt(0,0,0); cam.updateProjectionMatrix(); halfW=Math.tan(16*Math.PI/180)*cam.position.length()*cam.aspect; }
+  const scene=new THREE.Scene(), cam=new THREE.PerspectiveCamera(45,1,.1,100); cam.position.z=6;
+  const small=innerWidth<760, N=small?2600:5200, rnd=Math.random;
+  const col=new THREE.Color();
+  const palCol=(key,f)=>{ if(key==='today') { const c=new THREE.Color(TODAY.hex), h={}; c.getHSL(h); return c.setHSL(h.h, Math.max(h.s,.4), .56+.16*f); } const d=PAL[key].dots; const x=Math.min(.999,Math.max(0,f))*(d.length-1), i=Math.floor(x); const a=new THREE.Color(d[i]), b=new THREE.Color(d[i+1]); return a.lerp(b,x-i); };
+  function make(fn){ const P=new Float32Array(N*3), C=new Float32Array(N*3); for(let i=0;i<N;i++){ const o=fn(i); P[i*3]=o[0];P[i*3+1]=o[1];P[i*3+2]=o[2]; const c=palCol(o[3],o[4]); C[i*3]=c.r;C[i*3+1]=c.g;C[i*3+2]=c.b; } return {P,C}; }
+  const golden=Math.PI*(3-Math.sqrt(5));
+  const SH={
+    // 1. dark sphere, one cap stained with today's colour
+    globe: make(i=>{ const y=1-(i/(N-1))*2, r=Math.sqrt(1-y*y), th=golden*i, R=1.75, x=Math.cos(th)*r, z=Math.sin(th)*r;
+      const cs=(x*.52+y*.64+z*.56)/1.0; const tint=cs>.5&&rnd()<.9;
+      return [x*R, y*R, z*R, tint?'today':'ash', tint?(cs-.5)*2:.15+.85*((y+1)/2)*rnd()]; }),
+    // 2. sphere breaks into nodes joined by thin edges
+    network: (()=>{ const K=64, R0=1.75, nodes=[]; for(let k=0;k<K;k++){ const y=1-(k/(K-1))*2, r=Math.sqrt(1-y*y), th=golden*k; nodes.push([Math.cos(th)*r*R0, y*R0, Math.sin(th)*r*R0]); }
+      const edges=[]; nodes.forEach((n,i)=>{ nodes.map((m,j)=>[j,(m[0]-n[0])**2+(m[1]-n[1])**2+(m[2]-n[2])**2]).filter(e=>e[0]!==i).sort((p,q)=>p[1]-q[1]).slice(0,3).forEach(e=>{ if(e[0]>i||!edges.some(x=>x[0]===e[0]&&x[1]===i)) edges.push([i,e[0]]); }); });
+      return make(i=>{
+        if(i%3===0){ const n=nodes[(i/3|0)%nodes.length], r=.06*Math.cbrt(rnd()), th=rnd()*6.283, ph=Math.acos(2*rnd()-1);
+          return [n[0]+r*Math.sin(ph)*Math.cos(th), n[1]+r*Math.sin(ph)*Math.sin(th), n[2]+r*Math.cos(ph), 'glow', .85+.15*rnd()]; }
+        const e=edges[i%edges.length], t=rnd(), A=nodes[e[0]], B=nodes[e[1]];
+        return [A[0]+(B[0]-A[0])*t+(rnd()-.5)*.014, A[1]+(B[1]-A[1])*t+(rnd()-.5)*.014, A[2]+(B[2]-A[2])*t+(rnd()-.5)*.014, 'mid', .2+.3*rnd()]; }); })(),
+    // 3. points gather into a chip with traces and pads
+    circuit: (()=>{ const segs=[], pads=[], c=.5; const rot=(x,y,q)=>q===0?[x,y]:q===1?[-y,x]:q===2?[-x,-y]:[y,-x];
+      for(let q=0;q<4;q++){ const [x1,y1]=rot(-c,-c,q), [x2,y2]=rot(c,-c,q), [x3,y3]=rot(c,c,q); segs.push([x1,y1,x2,y2]); void x3; void y3;
+        for(let k=0;k<5;k++){ const o=-.36+.18*k, d=Math.abs(k-2), sg=k===2?0:(k<2?-1:1), bx=c+.3, j=.16+.07*d, ex=bx+j, ey=o+sg*j, fx=1.7-.06*d;
+          [[c,o,bx,o],[bx,o,ex,ey],[ex,ey,fx,ey]].forEach(s2=>{ const A=rot(s2[0],s2[1],q), B=rot(s2[2],s2[3],q); segs.push([A[0],A[1],B[0],B[1]]); });
+          pads.push(rot(fx,ey,q)); } }
+      const len=segs.map(g=>Math.hypot(g[2]-g[0],g[3]-g[1])), tot=len.reduce((u,v)=>u+v,0);
+      const pick=()=>{ let r=rnd()*tot, k=0; while(k<segs.length-1&&r>len[k]){ r-=len[k]; k++; } return segs[k]; };
+      return make(i=>{ const m=i%10;
+        if(m<5){ const g=pick(), t=rnd(); return [(g[0]+(g[2]-g[0])*t)*1.12, (g[1]+(g[3]-g[1])*t)*1.12, (rnd()-.5)*.03, 'eme', .3+.35*rnd()]; }
+        if(m<7){ const gx=(Math.floor(rnd()*9)-4)*.1, gy=(Math.floor(rnd()*9)-4)*.1; return [gx*1.12, gy*1.12, (rnd()-.5)*.03, 'glow', .55+.3*rnd()]; }
+        const p=pads[(i>>3)%pads.length], a=rnd()*6.283, r=m<9?.075:.02*rnd(); return [(p[0]+Math.cos(a)*r)*1.12, (p[1]+Math.sin(a)*r)*1.12, (rnd()-.5)*.03, 'glow', .85+.15*rnd()]; }); })(),
+    // 4. everything settles into one dense, bright core
+    core: make(i=>{ const R=1.2, r=R*Math.pow(rnd(),1.7), th=rnd()*6.283, ph=Math.acos(2*rnd()-1);
+      return [r*Math.sin(ph)*Math.cos(th), r*Math.sin(ph)*Math.sin(th), r*Math.cos(ph), 'glow', 1-r/R]; })
+  };
+  const DIM={globe:1,network:.95,circuit:.9,core:1}, SIZE={globe:.042,network:.04,circuit:.042,core:.06};
+  const OFFSET={globe:[1.95,.1],network:[1.95,0],circuit:[1.95,0],core:[1.95,0]};
+  const pos=new Float32Array(SH.globe.P), cols=new Float32Array(SH.globe.C), draw=new Float32Array(pos);
+  const speed=new Float32Array(N), phase=new Float32Array(N); for(let i=0;i<N;i++){ speed[i]=.025+rnd()*.05; phase[i]=rnd()*Math.PI*2; }
+  const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(draw,3)); geo.setAttribute('color',new THREE.BufferAttribute(cols,3));
+  const dot=document.createElement('canvas'); dot.width=dot.height=64; const dg=dot.getContext('2d'); const rg=dg.createRadialGradient(32,32,0,32,32,32);
+  rg.addColorStop(0,'rgba(255,255,255,1)'); rg.addColorStop(.4,'rgba(255,255,255,.85)'); rg.addColorStop(1,'rgba(255,255,255,0)'); dg.fillStyle=rg; dg.fillRect(0,0,64,64);
+  const mat=new THREE.PointsMaterial({size:small?.05:.042, vertexColors:true, map:new THREE.CanvasTexture(dot), transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, opacity:.9});
+  const pts=new THREE.Points(geo,mat); scene.add(pts);
+  function size(){ renderer.setSize(innerWidth,innerHeight,false); cam.aspect=innerWidth/innerHeight; cam.position.z=innerWidth<760?8.5:6; cam.updateProjectionMatrix(); }
   size(); addEventListener('resize',size);
-  const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)), ease=x=>x*x*(3-2*x);
-  /* one continuous timeline: a keyframe at the centre of every section, blended while scrolling between them */
-  const KF=[ /* lid, explode, glow, dim, x (fraction of half width), scale */
-    [0,   0,  .1, 1,   .5,  1.12],  /* hero */
-    [.05, 0,  .15,.26, 0,   1.0 ],  /* motto: centred behind the quote */
-    [.9,  0,  .9, .45, .55, 1.0 ],  /* about */
-    [1,   0,  1,  .4,  .5,  1.0 ],  /* think */
-    [1,   0,  .6, .2,  0,   .9  ],  /* projects */
-    [1,   0,  .4, .14, .5,  1.0 ],  /* log */
-    [1,   .9, .85,.22, 0,   1.0 ],  /* stack: opened and floating apart */
-    [0,   0,  1,  1,   .5,  1.15]]; /* contact: closes and settles */
-  const lerp=(a,b,f)=>a+(b-a)*f;
-  function target(){
-    const u=Math.min(KF.length-1,Math.max(0,activeIdx+secProg-.5)), i=Math.min(KF.length-2,Math.floor(u)), f=ease(u-i), A=KF[i], B=KF[i+1];
-    return {lid:lerp(A[0],B[0],f), ex:lerp(A[1],B[1],f), glow:lerp(A[2],B[2],f), dim:lerp(A[3],B[3],f), x:lerp(A[4],B[4],f), sc:lerp(A[5],B[5],f)}; }
-  const cur={lid:0, ex:0, glow:0, dim:0, x:.5, sc:1.12}; let t=0, rotY=0, rotX=.3, px=0;
-  const ks=reduce?1:.14;
+  let t=0, ox=1.6, oy=.15, spin=0, lastSY=scrollY, kick=0, sRot=0, spS=0;
   function frame(){
-    t+=reduce?0:.016; const T0=target();
-    cur.lid+=(T0.lid-cur.lid)*ks; cur.ex+=(T0.ex-cur.ex)*ks; cur.glow+=(T0.glow-cur.glow)*ks; cur.dim+=(T0.dim-cur.dim)*(reduce?1:.12); cur.x+=(T0.x-cur.x)*ks; cur.sc+=(T0.sc-cur.sc)*ks;
-    hinge.position.set(0, H/2+.02+cur.ex*1.1, -D/2); hinge.rotation.x=-cur.lid*1.9;
-    left.position.set(-(W/2-T/2)-cur.ex*1.2, .04, 0); right.position.set((W/2-T/2)+cur.ex*1.2, .04, 0);
-    front.position.set(0,.04,(D/2-T/2)+cur.ex*1.2); back.position.set(0,.04,-(D/2-T/2)-cur.ex*1.2);
-    bottom.position.set(0,-H/2+.05-cur.ex*.8,0);
-    core.position.y=-.12+cur.ex*.9; core.scale.setScalar(1+cur.ex*.25); coreM.color.copy(gc).multiplyScalar(.5+cur.glow*1.6);
-    lamp.intensity=cur.glow*3.2; glow.material.opacity=cur.glow*.85; glow.scale.setScalar(1.2+cur.glow*2.4); glow.position.y=.5+cur.ex*.9;
-    const ry=scrollY*.0011+t*.14+mouseX*.5, rx=.28+.3*cur.lid-.1*cur.ex+mouseY*.2;
-    rotY+=(ry-rotY)*(reduce?1:.08); rotX+=(rx-rotX)*(reduce?1:.08);
-    group.rotation.set(rotX,rotY,0);
-    const sc=(narrow?.72:1)*cur.sc, tx=narrow?0:halfW*cur.x; px=tx; group.scale.setScalar(sc); group.position.set(px,narrow?.9:-.1,0);
-    canvas.style.opacity=(cur.dim*(narrow?.6:1)).toFixed(3);
+    t+= reduce?0:.016;
+    const dy=scrollY-lastSY; lastSY=scrollY; kick+=(Math.min(1,Math.abs(dy)/60)-kick)*.08; sRot+=((reduce?0:scrollY*.0011)-sRot)*.08;
+    const S=SH[activeShape]||SH.globe, P=S.P, C=S.C;
+    for(let i=0;i<N;i++){ const k=speed[i], j=i*3;
+      pos[j]+=(P[j]-pos[j])*k; pos[j+1]+=(P[j+1]-pos[j+1])*k; pos[j+2]+=(P[j+2]-pos[j+2])*k;
+      cols[j]+=(C[j]-cols[j])*.04; cols[j+1]+=(C[j+1]-cols[j+1])*.04; cols[j+2]+=(C[j+2]-cols[j+2])*.04;
+      const w=reduce?0:.035+kick*.22; draw[j]=pos[j]+Math.sin(t*1.3+phase[i])*w; draw[j+1]=pos[j+1]+Math.cos(t*1.1+phase[i])*w; draw[j+2]=pos[j+2];
+    }
+    geo.attributes.position.needsUpdate=true; geo.attributes.color.needsUpdate=true;
+    const off=OFFSET[activeShape]||[0,0], narrow=innerWidth<760;
+    ox+=((narrow?0:off[0])-ox)*.04; oy+=((narrow?(activeShape==='globe'?.9:.2):off[1])-oy)*.04;
+    spin+= reduce?0:.0025;
+    mat.opacity+=((((activeDim!=null?activeDim:(DIM[activeShape]||.4)))*(narrow?.55:1))-mat.opacity)*.05;
+    mat.size+=(((SIZE[activeShape]||.042)*(small?1.18:1))-mat.size)*.05;
+    pts.position.set(ox,oy,0); spS+=(Math.sin(secProg*Math.PI*2)*.5-spS)*.06; const sc=1+kick*.12+spS*.1; pts.scale.set(sc,sc,sc);
+    const flat=(activeShape==='circuit');
+    pts.rotation.y=(flat?Math.sin(t*.4)*.25:spin+sRot)+mouseX*.45;
+    pts.rotation.x=(flat?.1:.3+spS*.6)+mouseY*.3;
+    pts.rotation.z=0;
     renderer.render(scene,cam); requestAnimationFrame(frame);
   }
   frame();
