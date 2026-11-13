@@ -442,7 +442,7 @@ a,button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 </header>
 
 <main id="top">
-  <section class="hero" data-shape="globe" data-pal="glow" aria-label="소개">
+  <section data-dim="1" class="hero" data-shape="globe" data-pal="glow" aria-label="소개">
     <div class="eyebrow"><span class="dot"></span><span id="h-eyebrow"></span></div>
     <h1>
       <span class="en"><span class="line"><span id="h-en1"></span></span><span class="line"><span><span id="h-en2"></span> <em id="h-em"></em></span></span></span>
@@ -454,14 +454,14 @@ a,button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
     </div>
   </section>
 
-  <section class="quote" data-shape="globe" data-pal="mid" aria-label="좌우명">
+  <section data-dim="0.9" class="quote" data-shape="globe" data-pal="mid" aria-label="좌우명">
     <blockquote data-reveal id="q-text"></blockquote>
     <p data-reveal id="q-ko"></p>
     <cite data-reveal id="q-by"></cite>
   </section>
 
 
-  <section id="about" data-shape="globe" data-pal="mid" aria-label="About me">
+  <section data-dim="0.5" id="about" data-shape="globe" data-pal="mid" aria-label="About me">
     <p class="kicker">About me.</p>
     <div class="about-wrap">
       <div>
@@ -475,7 +475,7 @@ a,button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
     </div>
   </section>
 
-  <section id="think" data-shape="globe" data-pal="mid" aria-label="How I think">
+  <section data-dim="0.45" id="think" data-shape="globe" data-pal="mid" aria-label="How I think">
     <p class="kicker">I measure, therefore I know.</p>
     <div class="think">
       <p class="statement" id="statement"></p>
@@ -483,7 +483,7 @@ a,button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
     </div>
   </section>
 
-  <section id="projects" class="projects" data-shape="network" data-pal="eme" aria-label="Projects">
+  <section data-dim="0.5" id="projects" class="projects" data-shape="network" data-pal="eme" aria-label="Projects">
     <div class="head">
       <div><p class="kicker" style="margin-bottom:18px">Efforts never betray.</p><h2 class="big">Things I <em>made.</em></h2></div>
       <span class="count" id="p-count"></span>
@@ -491,14 +491,14 @@ a,button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
     <div class="hwrap"><div class="track" id="track"></div></div>
   </section>
 
-  <section id="log" data-shape="network" data-pal="eme" aria-label="Activity log">
+  <section data-dim="0.2" id="log" data-shape="network" data-pal="eme" aria-label="Activity log">
     <p class="kicker">Practice makes perfect.</p>
     <h2 class="big" data-reveal>Activity <em>log.</em></h2>
     <p class="sub" data-reveal style="margin-bottom:44px">혼자서도, 팀으로도 계속 도전하고 있습니다.</p>
     <ul class="timeline" id="timeline"></ul>
   </section>
 
-  <section id="stack" data-shape="circuit" data-pal="mid" aria-label="Stack">
+  <section data-dim="0.45" id="stack" data-shape="circuit" data-pal="mid" aria-label="Stack">
     <p class="kicker">Be creative, be better.</p>
     <div class="deck-head">
       <div><h2 class="big" data-reveal>Tools I <em>use.</em></h2><p class="sub" data-reveal>데이터 분석부터 앱, 하드웨어까지 직접 써 본 도구들입니다.</p></div>
@@ -509,7 +509,7 @@ a,button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
   </section>
 
 
-  <section id="contact" class="contact" data-shape="core" data-pal="eme" aria-label="Contact">
+  <section data-dim="1" id="contact" class="contact" data-shape="core" data-pal="eme" aria-label="Contact">
     <p class="kicker">Feel free to contact.</p>
     <h2 class="big" data-reveal>Let's find<br>your <em>color.</em></h2>
     <p class="sub" data-reveal id="c-text"></p>
@@ -558,9 +558,10 @@ const SWATCHES = [
 ];
 const swHex = n => (SWATCHES.find(s=>s.name===n) || SWATCHES[5]).hex;
 const PAL = {
-  glow:{accent:'#E3EBC8', glow:['#55634A','#1E3A6B','#C9D6A6'], dots:['#8A939D','#C3C8CE','#EFE5C6','#D9CBA3']},
-  mid: {accent:'#BDC3C7', glow:['#33495D','#2C3D50','#4E6378'], dots:['#8A939D','#C3C8CE','#EFE5C6','#D9CBA3']},
-  eme: {accent:'#8FB86C', glow:['#2D5A4A','#0D4C3C','#5E7F45'], dots:['#8A939D','#C3C8CE','#EFE5C6','#D9CBA3']}
+  glow:{accent:'#E3EBC8', glow:['#55634A','#1E3A6B','#C9D6A6'], dots:['#C2AE7E','#DCCFA8','#F3EAD2','#E6D9B4']},
+  mid: {accent:'#BDC3C7', glow:['#33495D','#2C3D50','#4E6378'], dots:['#6F93B5','#9FBCD6','#D3E4F1','#88A9C6']},
+  eme: {accent:'#8FB86C', glow:['#2D5A4A','#0D4C3C','#5E7F45'], dots:['#5FA68A','#8FCDB3','#D6F0E4','#76BBA0']},
+  ash: {accent:'#BDC3C7', glow:['#333','#333','#333'], dots:['#6F7680','#9AA1A9','#CBD0D5','#AEB4BA']}
 };
 function lum(hex){ const n=parseInt(hex.slice(1),16); const c=[n>>16,(n>>8)&255,n&255].map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)}); return .2126*c[0]+.7152*c[1]+.0722*c[2]; }
 const inkOn = hex => lum(hex) > .35 ? '#0B0F13' : '#F4F6F7';
@@ -775,7 +776,7 @@ $('#copyMail').addEventListener('click', () => {
 });
 
 /* ---------- section tracking: shape + palette ---------- */
-let activeShape='globe', activePal='glow';
+let activeShape='globe', activePal='glow', activeDim=null;
 const glowEls=$$('.glow');
 function applyPalette(key){
   const p=PAL[key]; document.documentElement.style.setProperty('--accent', p.accent);
@@ -800,7 +801,7 @@ function trackSections(){
   const mid=innerHeight*.5; let best=null;
   for(const s of $$('main section')){ const r=s.getBoundingClientRect(); if(r.top<=mid && r.bottom>=mid){ best=s; break; } }
   setNavActive(best&&best.id&&gnav.querySelector(`a[data-sec="${best.id}"]`)?best.id:(best&&best.id==='think'?'about':null));
-  if(best){ const r=best.getBoundingClientRect(); secProg=Math.min(1,Math.max(0,(mid-r.top)/Math.max(1,r.height))); activeShape=best.dataset.shape; if(best.dataset.pal!==activePal){ activePal=best.dataset.pal; applyPalette(activePal); } }
+  if(best){ const r=best.getBoundingClientRect(); secProg=Math.min(1,Math.max(0,(mid-r.top)/Math.max(1,r.height))); activeShape=best.dataset.shape; activeDim=best.dataset.dim!=null?parseFloat(best.dataset.dim):null; if(best.dataset.pal!==activePal){ activePal=best.dataset.pal; applyPalette(activePal); } }
   // statement word reveal
   const st=$('#statement'); if(st){ const r=st.getBoundingClientRect(); const p=Math.min(1,Math.max(0,(innerHeight*.85-r.top)/(r.height+innerHeight*.35)));
     const ws=st.children; const k=Math.round(p*ws.length); for(let i=0;i<ws.length;i++) ws[i].style.opacity = i<k ? 1 : .16; }
@@ -826,7 +827,7 @@ addEventListener('pointermove', e=>{ mouseX=e.clientX/innerWidth-.5; mouseY=e.cl
     // 1. dark sphere, one cap stained with today's colour
     globe: make(i=>{ const y=1-(i/(N-1))*2, r=Math.sqrt(1-y*y), th=golden*i, R=1.75, x=Math.cos(th)*r, z=Math.sin(th)*r;
       const cs=(x*.52+y*.64+z*.56)/1.0; const tint=cs>.5&&rnd()<.9;
-      return [x*R, y*R, z*R, tint?'today':'glow', tint?(cs-.5)*2:.15+.85*((y+1)/2)*rnd()]; }),
+      return [x*R, y*R, z*R, tint?'today':'ash', tint?(cs-.5)*2:.15+.85*((y+1)/2)*rnd()]; }),
     // 2. sphere breaks into nodes joined by thin edges
     network: (()=>{ const K=64, R0=1.75, nodes=[]; for(let k=0;k<K;k++){ const y=1-(k/(K-1))*2, r=Math.sqrt(1-y*y), th=golden*k; nodes.push([Math.cos(th)*r*R0, y*R0, Math.sin(th)*r*R0]); }
       const edges=[]; nodes.forEach((n,i)=>{ nodes.map((m,j)=>[j,(m[0]-n[0])**2+(m[1]-n[1])**2+(m[2]-n[2])**2]).filter(e=>e[0]!==i).sort((p,q)=>p[1]-q[1]).slice(0,3).forEach(e=>{ if(e[0]>i||!edges.some(x=>x[0]===e[0]&&x[1]===i)) edges.push([i,e[0]]); }); });
@@ -844,7 +845,7 @@ addEventListener('pointermove', e=>{ mouseX=e.clientX/innerWidth-.5; mouseY=e.cl
       const len=segs.map(g=>Math.hypot(g[2]-g[0],g[3]-g[1])), tot=len.reduce((u,v)=>u+v,0);
       const pick=()=>{ let r=rnd()*tot, k=0; while(k<segs.length-1&&r>len[k]){ r-=len[k]; k++; } return segs[k]; };
       return make(i=>{ const m=i%10;
-        if(m<5){ const g=pick(), t=rnd(); return [(g[0]+(g[2]-g[0])*t)*1.12, (g[1]+(g[3]-g[1])*t)*1.12, (rnd()-.5)*.03, 'mid', .3+.35*rnd()]; }
+        if(m<5){ const g=pick(), t=rnd(); return [(g[0]+(g[2]-g[0])*t)*1.12, (g[1]+(g[3]-g[1])*t)*1.12, (rnd()-.5)*.03, 'eme', .3+.35*rnd()]; }
         if(m<7){ const gx=(Math.floor(rnd()*9)-4)*.1, gy=(Math.floor(rnd()*9)-4)*.1; return [gx*1.12, gy*1.12, (rnd()-.5)*.03, 'glow', .55+.3*rnd()]; }
         const p=pads[(i>>3)%pads.length], a=rnd()*6.283, r=m<9?.075:.02*rnd(); return [(p[0]+Math.cos(a)*r)*1.12, (p[1]+Math.sin(a)*r)*1.12, (rnd()-.5)*.03, 'glow', .85+.15*rnd()]; }); })(),
     // 4. everything settles into one dense, bright core
@@ -876,7 +877,7 @@ addEventListener('pointermove', e=>{ mouseX=e.clientX/innerWidth-.5; mouseY=e.cl
     const off=OFFSET[activeShape]||[0,0], narrow=innerWidth<760;
     ox+=((narrow?0:off[0])-ox)*.04; oy+=((narrow?(activeShape==='globe'?.9:.2):off[1])-oy)*.04;
     spin+= reduce?0:.0025;
-    mat.opacity+=(((DIM[activeShape]||.4)*(narrow?.55:1))-mat.opacity)*.05;
+    mat.opacity+=((((activeDim!=null?activeDim:(DIM[activeShape]||.4)))*(narrow?.55:1))-mat.opacity)*.05;
     mat.size+=(((SIZE[activeShape]||.042)*(small?1.18:1))-mat.size)*.05;
     pts.position.set(ox,oy,0); spS+=(Math.sin(secProg*Math.PI*2)*.5-spS)*.06; const sc=1+kick*.12+spS*.1; pts.scale.set(sc,sc,sc);
     const flat=(activeShape==='circuit');
