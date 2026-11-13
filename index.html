@@ -420,6 +420,15 @@ footer{font-size:12.5px;color:#9AA4AE}
 .skip:focus-visible{top:16px}
 section[id]{scroll-margin-top:88px}
 a,button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+
+.progress{position:fixed;left:0;right:0;top:0;height:2px;z-index:60;pointer-events:none}
+.progress i{display:block;height:100%;background:var(--accent,#D9CBA3);transform-origin:0 50%;transform:scaleX(0);opacity:.9}
+.rail{position:fixed;right:var(--gutter);bottom:26px;z-index:5;display:flex;align-items:baseline;gap:10px;font:500 11px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:#9AA4AE;pointer-events:none;mix-blend-mode:normal}
+.rail b{font-weight:500;color:#F2EFE8}.rail em{font-style:normal;opacity:.5}
+.totop{margin-left:14px;color:#C9CFD6;text-decoration:none;border-bottom:1px solid rgba(217,203,163,.4)}
+.totop:hover,.totop:focus-visible{color:#D9CBA3;border-color:#D9CBA3}
+@media (max-width:760px){.rail{display:none}}
+@media (prefers-reduced-motion:reduce){.progress i{transition:none}}
 </style>
 
 <div id="loader" aria-hidden="true">
@@ -434,6 +443,8 @@ a,button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 <div class="grain" aria-hidden="true"></div>
 <div class="vignette" aria-hidden="true"></div>
 <div class="cursor" aria-hidden="true"></div>
+<div class="progress" aria-hidden="true"><i></i></div>
+<div class="rail" aria-hidden="true"><b id="railN">01</b><span id="railT">Intro</span><em>/ 08</em></div>
 
 <header class="top">
   <a class="logo" href="#top"><i></i><span id="logoName">로드</span>&nbsp;/ PORTFOLIO</a>
@@ -515,6 +526,7 @@ a,button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
     <p class="sub" data-reveal id="c-text"></p>
     <div class="contact-row">
       <button class="btn primary" id="copyMail" data-hover type="button"><span class="mono" id="mailText"></span><span>복사</span></button>
+      <a class="btn" id="igLink" href="https://www.instagram.com/kxjihn/" target="_blank" rel="noopener" data-hover><span class="mono">Instagram ↗</span></a>
       <a class="btn" id="ghLink" href="#" target="_blank" rel="noopener" data-hover><span class="mono">GitHub ↗</span></a>
     </div>
     <div class="toast" id="toast" role="status"></div>
@@ -523,7 +535,7 @@ a,button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
 <footer>
   <span class="fdata"><span id="footClock">----</span><span id="footStats"></span><span><b id="footSw"></b></span></span>
-  <span>© 2026 <span id="footName"></span>. All rights reserved.</span>
+  <span>© 2026 <span id="footName"></span>. All rights reserved. <a class="totop" href="#top">↑ Top</a></span>
 </footer>
 
 <button id="editBtn" type="button" hidden><i></i>사이트 편집</button>
@@ -796,12 +808,16 @@ gnav.addEventListener('pointerleave',()=>{ navHover=null; placeInd(); });
 addEventListener('resize',placeInd);
 function setNavActive(id){ const a=id?gnav.querySelector(`a[data-sec="${id}"]`):null; if(a!==navActive){ navActive=a; placeInd(); } }
 
-let secProg=.5;
+const progEl=document.querySelector('.progress i'), railN=document.querySelector('#railN'), railT=document.querySelector('#railT');
+let secProg=.5, activeIdx=0; const SECS=[...document.querySelectorAll('main section')];
+const RAIL=['Intro','Motto','About','Think','Projects','Log','Stack','Contact'];
 function trackSections(){
   const mid=innerHeight*.5; let best=null;
   for(const s of $$('main section')){ const r=s.getBoundingClientRect(); if(r.top<=mid && r.bottom>=mid){ best=s; break; } }
   setNavActive(best&&best.id&&gnav.querySelector(`a[data-sec="${best.id}"]`)?best.id:(best&&best.id==='think'?'about':null));
-  if(best){ const r=best.getBoundingClientRect(); secProg=Math.min(1,Math.max(0,(mid-r.top)/Math.max(1,r.height))); activeShape=best.dataset.shape; activeDim=best.dataset.dim!=null?parseFloat(best.dataset.dim):null; activeSec=best.id||best.classList[0]||''; if(best.dataset.pal!==activePal){ activePal=best.dataset.pal; applyPalette(activePal); } }
+  if(best){ const r=best.getBoundingClientRect(); secProg=Math.min(1,Math.max(0,(mid-r.top)/Math.max(1,r.height))); activeShape=best.dataset.shape; activeDim=best.dataset.dim!=null?parseFloat(best.dataset.dim):null; activeSec=best.id||best.classList[0]||''; activeIdx=SECS.indexOf(best); if(best.dataset.pal!==activePal){ activePal=best.dataset.pal; applyPalette(activePal); } }
+  { const mx=document.documentElement.scrollHeight-innerHeight, pr=mx>0?Math.min(1,scrollY/mx):0; progEl.style.transform='scaleX('+pr.toFixed(4)+')';
+    const n=String(Math.max(0,activeIdx)+1).padStart(2,'0'); if(railN.textContent!==n){ railN.textContent=n; railT.textContent=RAIL[activeIdx]||''; } }
   // statement word reveal
   const st=$('#statement'); if(st){ const r=st.getBoundingClientRect(); const p=Math.min(1,Math.max(0,(innerHeight*.85-r.top)/(r.height+innerHeight*.35)));
     const ws=st.children; const k=Math.round(p*ws.length); for(let i=0;i<ws.length;i++) ws[i].style.opacity = i<k ? 1 : .16; }
@@ -859,22 +875,25 @@ addEventListener('pointermove', e=>{ mouseX=e.clientX/innerWidth-.5; mouseY=e.cl
     cam.position.set(0,1.6,narrow?11:9); cam.lookAt(0,0,0); cam.updateProjectionMatrix(); halfW=Math.tan(16*Math.PI/180)*cam.position.length()*cam.aspect; }
   size(); addEventListener('resize',size);
   const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)), ease=x=>x*x*(3-2*x);
-  /* what the box does in each section: opens, rests, comes apart, closes */
-  function target(){ const p=secProg; switch(activeSec){
-    case 'hero':     return {lid:0, ex:0, glow:.1, dim:1};
-    case 'quote':    return {lid:.04, ex:0, glow:.14, dim:.9};
-    case 'about':    { const o=ease(clamp(p*1.7)); return {lid:o, ex:0, glow:o, dim:.45}; }
-    case 'think':    return {lid:1, ex:0, glow:1, dim:.45};
-    case 'projects': return {lid:1, ex:0, glow:.6, dim:.25};
-    case 'log':      return {lid:1, ex:0, glow:.4, dim:.15};
-    case 'stack':    return {lid:1, ex:ease(clamp(p*1.6)), glow:.85, dim:.26};
-    case 'contact':  { const c=ease(clamp(p*1.9)); return {lid:1-c, ex:0, glow:1, dim:1}; }
-    default:         return {lid:0, ex:0, glow:.1, dim:.6}; } }
-  const cur={lid:0, ex:0, glow:0, dim:0}; let t=0, rotY=0, rotX=.3, px=0;
-  const ks=reduce?1:.07;
+  /* one continuous timeline: a keyframe at the centre of every section, blended while scrolling between them */
+  const KF=[ /* lid, explode, glow, dim, x (fraction of half width), scale */
+    [0,   0,  .1, 1,   .5,  1.12],  /* hero */
+    [.05, 0,  .15,.26, 0,   1.0 ],  /* motto: centred behind the quote */
+    [.9,  0,  .9, .45, .55, 1.0 ],  /* about */
+    [1,   0,  1,  .4,  .5,  1.0 ],  /* think */
+    [1,   0,  .6, .2,  0,   .9  ],  /* projects */
+    [1,   0,  .4, .14, .5,  1.0 ],  /* log */
+    [1,   .9, .85,.22, 0,   1.0 ],  /* stack: opened and floating apart */
+    [0,   0,  1,  1,   .5,  1.15]]; /* contact: closes and settles */
+  const lerp=(a,b,f)=>a+(b-a)*f;
+  function target(){
+    const u=Math.min(KF.length-1,Math.max(0,activeIdx+secProg-.5)), i=Math.min(KF.length-2,Math.floor(u)), f=ease(u-i), A=KF[i], B=KF[i+1];
+    return {lid:lerp(A[0],B[0],f), ex:lerp(A[1],B[1],f), glow:lerp(A[2],B[2],f), dim:lerp(A[3],B[3],f), x:lerp(A[4],B[4],f), sc:lerp(A[5],B[5],f)}; }
+  const cur={lid:0, ex:0, glow:0, dim:0, x:.5, sc:1.12}; let t=0, rotY=0, rotX=.3, px=0;
+  const ks=reduce?1:.14;
   function frame(){
     t+=reduce?0:.016; const T0=target();
-    cur.lid+=(T0.lid-cur.lid)*ks; cur.ex+=(T0.ex-cur.ex)*ks; cur.glow+=(T0.glow-cur.glow)*ks; cur.dim+=(T0.dim-cur.dim)*(reduce?1:.05);
+    cur.lid+=(T0.lid-cur.lid)*ks; cur.ex+=(T0.ex-cur.ex)*ks; cur.glow+=(T0.glow-cur.glow)*ks; cur.dim+=(T0.dim-cur.dim)*(reduce?1:.12); cur.x+=(T0.x-cur.x)*ks; cur.sc+=(T0.sc-cur.sc)*ks;
     hinge.position.set(0, H/2+.02+cur.ex*1.1, -D/2); hinge.rotation.x=-cur.lid*1.9;
     left.position.set(-(W/2-T/2)-cur.ex*1.2, .04, 0); right.position.set((W/2-T/2)+cur.ex*1.2, .04, 0);
     front.position.set(0,.04,(D/2-T/2)+cur.ex*1.2); back.position.set(0,.04,-(D/2-T/2)-cur.ex*1.2);
@@ -884,7 +903,7 @@ addEventListener('pointermove', e=>{ mouseX=e.clientX/innerWidth-.5; mouseY=e.cl
     const ry=scrollY*.0011+t*.14+mouseX*.5, rx=.28+.3*cur.lid-.1*cur.ex+mouseY*.2;
     rotY+=(ry-rotY)*(reduce?1:.08); rotX+=(rx-rotX)*(reduce?1:.08);
     group.rotation.set(rotX,rotY,0);
-    const sc=narrow?.8:1.12, tx=narrow?0:halfW*.5; px+=(tx-px)*.08; group.scale.setScalar(sc); group.position.set(px,narrow?.9:-.1,0);
+    const sc=(narrow?.72:1)*cur.sc, tx=narrow?0:halfW*cur.x; px=tx; group.scale.setScalar(sc); group.position.set(px,narrow?.9:-.1,0);
     canvas.style.opacity=(cur.dim*(narrow?.6:1)).toFixed(3);
     renderer.render(scene,cam); requestAnimationFrame(frame);
   }
