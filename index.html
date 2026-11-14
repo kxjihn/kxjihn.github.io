@@ -138,7 +138,7 @@ html.ready .hero .eyebrow,html.ready .hero-ko,html.ready .stats{opacity:1;transi
 
 /* ---------- think ---------- */
 .statement{font-weight:600;font-size:clamp(26px,3.5vw,56px);line-height:1.32;letter-spacing:-.03em;max-width:21em}
-.statement .w{transition:opacity .5s}
+.statement .w,.quote blockquote .w{transition:opacity .5s}
 .pillars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(24px,3vw,48px);margin-top:clamp(56px,10vh,112px)}
 .pillar{border-top:1px solid var(--fg);padding-top:18px}
 .pillar .code{display:flex;justify-content:space-between;font:500 12px/1.4 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
@@ -551,7 +551,7 @@ $('#logFilters').addEventListener('click',e=>{ const b=e.target.closest('[data-f
 function render(d){
   const h=d.hero||{};
   $('#h-eyebrow').textContent=h.eyebrow||''; $('#h-en1').textContent=h.en1||''; $('#h-en2').textContent=h.en2||''; $('#h-em').textContent=h.em||''; $('#h-ko').textContent=h.ko||'';
-  const q=d.quote||{}; $('#q-text').textContent=q.text?`“${q.text}”`:''; $('#q-ko').textContent=q.ko||''; $('#q-by').textContent=q.by||'';
+  const q=d.quote||{}; $('#q-text').innerHTML=q.text?`“${q.text}”`.split(/\s+/).map(w=>`<span class="w">${esc(w)}</span>`).join(' '):''; $('#q-ko').textContent=q.ko||''; $('#q-by').textContent=q.by||'';
   const a=d.about||{}; $('#a-name').textContent=a.name||''; $('#logoName').textContent=a.name||''; $('#footName').textContent=a.name||'';
   const tags=a.tags||[]; let ri=tags.findIndex(t=>/residence/i.test(t.label||'')); const at=ri<0?0:ri+1;
   $('#a-tags').innerHTML=tags.slice(0,at).map(tagHTML).join('')+schoolHTML(a.schools)+tags.slice(at).map(tagHTML).join('');
@@ -671,7 +671,7 @@ function onScroll(){
   for(const s of SECS){ const r=s.getBoundingClientRect(); if(r.top<=mid && r.bottom>=mid){ best=s; break; } }
   const id=best?(best.id==='think'?'about':best.id):''; const na=id?$(`#gnav a[data-sec="${id}"]`):null; if(na!==navActive){ navActive=na; placeInd(); }
   const mx=document.documentElement.scrollHeight-innerHeight; progEl.style.transform='scaleX('+(mx>0?Math.min(1,scrollY/mx):0).toFixed(4)+')';
-  const st=$('#statement'); if(st){ const r=st.getBoundingClientRect(), p=Math.min(1,Math.max(0,(innerHeight*.85-r.top)/(r.height+innerHeight*.35)));
+  for(const st of [$('#q-text'),$('#statement')]){ if(!st) continue; const r=st.getBoundingClientRect(), p=Math.min(1,Math.max(0,(innerHeight*.85-r.top)/(r.height+innerHeight*.35)));
     const ws=st.children, k=reduce?ws.length:Math.round(p*ws.length); for(let i=0;i<ws.length;i++) ws[i].style.opacity=i<k?1:.16; }
 }
 addEventListener('scroll',onScroll,{passive:true}); addEventListener('resize',onScroll);
