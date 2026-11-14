@@ -190,7 +190,15 @@ h2.big em{color:var(--accent)}
 .projects{padding-inline:0}
 .projects .head{padding-inline:var(--gutter);display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:48px}
 .count{font-family:var(--f-mono);font-size:12px;color:var(--fog)}
-.hwrap{overflow:hidden}
+.hwrap{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;cursor:grab;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scroll-padding-inline:var(--gutter);outline:none}
+.hwrap::-webkit-scrollbar{display:none}
+.hwrap.drag{cursor:grabbing;scroll-snap-type:none}
+.hwrap:focus-visible{box-shadow:inset 0 0 0 2px var(--accent)}
+.hwrap .card{scroll-snap-align:start;user-select:none;-webkit-user-drag:none}
+.hwrap.drag .card{pointer-events:none}
+.projects .head{align-items:flex-end}
+.projects .head .deck-nav{display:flex}
+@media (max-width:760px){.projects .head .deck-nav{display:none}}
 .track{display:flex;gap:20px;padding-inline:var(--gutter);width:max-content}
 .card{width:min(460px,80vw);flex:none;background:rgba(15,20,25,.82);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;text-decoration:none;transition:border-color .3s}
 .card:hover{border-color:var(--c)}
@@ -429,6 +437,8 @@ a,button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .totop:hover,.totop:focus-visible{color:#D9CBA3;border-color:#D9CBA3}
 @media (max-width:760px){.rail{display:none}}
 @media (prefers-reduced-motion:reduce){.progress i{transition:none}}
+.deck-nav button:disabled{opacity:.3;cursor:default}
+.deck-nav button:disabled:hover{border-color:var(--line)}
 </style>
 
 <div id="loader" aria-hidden="true">
@@ -497,9 +507,9 @@ a,button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
   <section data-dim="0.5" id="projects" class="projects" data-shape="network" data-pal="eme" aria-label="Projects">
     <div class="head">
       <div><p class="kicker" style="margin-bottom:18px">Efforts never betray.</p><h2 class="big">Things I <em>made.</em></h2></div>
-      <span class="count" id="p-count"></span>
+      <div style="display:flex;align-items:center;gap:20px"><span class="count" id="p-count"></span><div class="deck-nav"><button type="button" id="pPrev" aria-label="이전 프로젝트">‹</button><button type="button" id="pNext" aria-label="다음 프로젝트">›</button></div></div>
     </div>
-    <div class="hwrap"><div class="track" id="track"></div></div>
+    <div class="hwrap" id="hwrap" tabindex="0" aria-label="프로젝트 목록, 좌우로 밀어서 보기"><div class="track" id="track"></div></div>
   </section>
 
   <section data-dim="0.2" id="log" data-shape="network" data-pal="eme" aria-label="Activity log">
@@ -920,11 +930,25 @@ function setupScroll(){
     gsap.ticker.add(t=>lenis.raf(t*1000)); gsap.ticker.lagSmoothing(0);
     $$('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{ const id=a.getAttribute('href'); const el=id.length>1?$(id):document.body; if(el){ e.preventDefault(); lenis.scrollTo(el,{offset:0}); } }));
   }catch(e){ lenis=null; } }
-  gsap.matchMedia().add('(min-width: 761px)', ()=>{
-    const track=$('#track'); const dist=()=>Math.max(0, track.scrollWidth-innerWidth);
-    gsap.to(track,{x:()=>-dist(), ease:'none', scrollTrigger:{trigger:'#projects .hwrap', start:'center center', end:()=>'+='+dist(), scrub:1, pin:'#projects', invalidateOnRefresh:true, anticipatePin:1}});
-  });
 }
+
+/* ---------- projects row: drag, inertia, arrows, keys ---------- */
+(function projRow(){
+  const w=$('#hwrap'); if(!w) return; let d=null, vel=0, raf=0;
+  const step=()=>{ const c=w.querySelector('.card'); return (c?c.getBoundingClientRect().width:420)+20; };
+  const upd=()=>{ const max=w.scrollWidth-w.clientWidth-2; $('#pPrev').disabled=w.scrollLeft<=2; $('#pNext').disabled=w.scrollLeft>=max; };
+  const glide=()=>{ if(Math.abs(vel)<.3){ w.classList.remove('drag'); upd(); return; } w.scrollLeft+=vel; vel*=.94; raf=requestAnimationFrame(glide); };
+  w.addEventListener('pointerdown',e=>{ if(e.pointerType==='touch') return; cancelAnimationFrame(raf); d={x:e.clientX,sl:w.scrollLeft,moved:false,lx:e.clientX,lt:performance.now()}; vel=0; });
+  addEventListener('pointermove',e=>{ if(!d) return; const dx=e.clientX-d.x; if(!d.moved&&Math.abs(dx)>5){ d.moved=true; w.classList.add('drag'); }
+    if(d.moved){ w.scrollLeft=d.sl-dx; const t=performance.now(), dt=Math.max(1,t-d.lt); vel=(d.lx-e.clientX)/dt*16; d.lx=e.clientX; d.lt=t; } });
+  addEventListener('pointerup',()=>{ if(!d) return; const m=d.moved; d=null; if(m){ if(reduce) vel=0; raf=requestAnimationFrame(glide); } });
+  w.addEventListener('dragstart',e=>e.preventDefault());
+  w.addEventListener('scroll',upd,{passive:true}); addEventListener('resize',upd);
+  const by=n=>w.scrollBy({left:n*step(),behavior:reduce?'auto':'smooth'});
+  $('#pPrev').addEventListener('click',()=>by(-1)); $('#pNext').addEventListener('click',()=>by(1));
+  w.addEventListener('keydown',e=>{ if(e.key==='ArrowLeft'){ by(-1); e.preventDefault(); } if(e.key==='ArrowRight'){ by(1); e.preventDefault(); } });
+  setTimeout(upd,400);
+})();
 
 /* ---------- preloader ---------- */
 function startLoader(){
