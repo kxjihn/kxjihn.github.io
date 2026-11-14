@@ -70,7 +70,12 @@ main,header.top,footer{position:relative;z-index:3}
 .cursor{position:fixed;left:0;top:0;width:34px;height:34px;margin:-17px 0 0 -17px;border:1px solid var(--paper);border-radius:50%;
   z-index:90;pointer-events:none;mix-blend-mode:difference;transition:width .25s,height .25s,margin .25s,background .25s;display:none}
 .cursor.big{width:72px;height:72px;margin:-36px 0 0 -36px;background:var(--paper)}
-@media (hover:hover) and (pointer:fine){ .cursor{display:block} }
+.cursor-dot{position:fixed;left:0;top:0;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:var(--paper);z-index:91;pointer-events:none;mix-blend-mode:difference;display:none;transition:opacity .2s,transform .2s}
+.cursor.big~.cursor-dot{opacity:0}
+.cursor.down{width:24px;height:24px;margin:-12px 0 0 -12px}
+@media (hover:hover) and (pointer:fine){ .cursor,.cursor-dot{display:block}
+  html.has-cursor, html.has-cursor *{cursor:none !important}
+  html.has-cursor input, html.has-cursor textarea, html.has-cursor select{cursor:text !important} }
 
 /* ---------- top bar ---------- */
 header.top{position:fixed;inset:0 0 auto 0;z-index:50;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;
@@ -452,7 +457,7 @@ a,button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 <canvas id="field" aria-hidden="true"></canvas>
 <div class="grain" aria-hidden="true"></div>
 <div class="vignette" aria-hidden="true"></div>
-<div class="cursor" aria-hidden="true"></div>
+<div class="cursor" aria-hidden="true"></div><div class="cursor-dot" aria-hidden="true"></div>
 <div class="progress" aria-hidden="true"><i></i></div>
 <div class="rail" aria-hidden="true"><b id="railN">01</b><span id="railT">Intro</span><em>/ 08</em></div>
 
@@ -785,7 +790,10 @@ function observeReveals(){ $$('[data-reveal]:not(.in)').forEach(el=> io ? io.obs
 
 /* ---------- cursor ---------- */
 const cur = $('.cursor'); let mx=innerWidth/2,my=innerHeight/2,cx=mx,cy=my;
-addEventListener('pointermove', e=>{mx=e.clientX;my=e.clientY;});
+const dot=$('.cursor-dot'); let seen=false;
+addEventListener('pointermove', e=>{ mx=e.clientX; my=e.clientY; if(e.pointerType==='mouse'){ if(!seen){ seen=true; cx=mx; cy=my; document.documentElement.classList.add('has-cursor'); } dot.style.transform=`translate(${mx}px,${my}px)`; } });
+addEventListener('pointerdown',()=>cur.classList.add('down')); addEventListener('pointerup',()=>cur.classList.remove('down'));
+document.addEventListener('pointerleave',()=>{ cur.style.opacity=0; dot.style.opacity=0; }); document.addEventListener('pointerenter',()=>{ cur.style.opacity=''; dot.style.opacity=''; });
 (function loop(){ cx+=(mx-cx)*.18; cy+=(my-cy)*.18; cur.style.transform=`translate(${cx}px,${cy}px)`; requestAnimationFrame(loop); })();
 function bindHover(el){ if(el._h) return; el._h=1; el.addEventListener('pointerenter',()=>cur.classList.add('big')); el.addEventListener('pointerleave',()=>cur.classList.remove('big')); }
 
