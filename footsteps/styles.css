@@ -291,7 +291,7 @@ dialog{overflow:hidden}
 .bm-medal{position:relative;width:180px;height:200px;margin:-90px auto 0}
 .bm-ribbon{position:absolute;left:5px;top:118px}
 .bm-coin{position:absolute;left:10px;top:0;width:160px;height:160px;border-radius:50%;overflow:hidden;display:grid;place-items:center;
-  background:radial-gradient(circle at 50% 55%,#fff8fa 0 52%,transparent 53%),conic-gradient(from 200deg,var(--gold-2),var(--gold-1),var(--gold-3),var(--gold-2),var(--gold-4),var(--gold-2));
+  background:radial-gradient(circle at 50% 50%,#fffaf0 0 56%,transparent 57%),conic-gradient(from 200deg,var(--gold-2),var(--gold-1),var(--gold-3),var(--gold-2),var(--gold-4),var(--gold-2));
   box-shadow:0 0 0 4px var(--gold-4) inset,0 0 0 9px var(--gold-1) inset,0 10px 30px rgb(156 111 34/.45)}
 .bm-coin img{width:74px;height:auto;position:relative;z-index:1;margin-top:6px}
 .bm-shine{position:absolute;inset:-20%;background:linear-gradient(115deg,transparent 40%,rgb(255 255 255/.85) 50%,transparent 60%);transform:translateX(-100%);animation:bm-shine 1.4s .5s ease-out forwards;z-index:2}
@@ -303,3 +303,15 @@ dialog{overflow:hidden}
 .bm-stamps svg{transform:rotate(-8deg)}
 .bm-acts{display:grid;gap:var(--space-2);margin-top:var(--space-4)}
 @media(prefers-reduced-motion:reduce){.bm-shine{display:none}}
+.bm-art{position:relative;z-index:1;color:var(--gold-4);transform:rotate(-6deg)}
+.bm-coin img{display:none}
+
+/* 모든 스탬프에 확실한 효과: 배경을 살짝 덮고 도장을 크게 */
+.stamp-fx{background:radial-gradient(circle at 50% 45%,rgb(255 240 243/.92),rgb(46 31 34/.35) 75%);animation:fx-bgin 2s ease forwards}
+@keyframes fx-bgin{0%{opacity:0}12%{opacity:1}80%{opacity:1}100%{opacity:0}}
+.fx-seal{animation-duration:2s}
+#fxSeal svg{width:180px;height:180px}
+.fx-seal p{font-size:22px;padding:6px 18px}
+.fx-seal small{font-size:var(--size-sm);color:var(--color-text-secondary);background:var(--color-surface-raised);border-radius:var(--radius-pill);padding:3px 12px}
+.fx-seal small:empty{display:none}
+.fx-petals i{animation-duration:1.6s}
