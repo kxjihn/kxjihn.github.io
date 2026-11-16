@@ -72,6 +72,18 @@ const DETAILS = {
     src: ['tour']
   }
 };
+/* 장소 사진: 위키미디어 공용(자유 이용 사진)을 원본 링크로 불러온다.
+   답사 사진으로 바꾸려면 footsteps/photos/ 폴더에 넣고 src를 'photos/파일이름.jpg', credit을 '사진: 건의함에 한 건의 건의한 건희'로 바꾸면 된다. */
+const commons = name => 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(name) + '?width=900';
+const commonsPage = name => 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(name.replace(/ /g, '_'));
+const PHOTOS = {
+  '국립대전현충원': {src: commons('20250816 국립대전현충원 현충탑.jpg'), alt: '국립대전현충원 현충탑', credit: '위키미디어 공용', link: commonsPage('20250816 국립대전현충원 현충탑.jpg')},
+  '현충원역': null,
+  '중앙로역': {src: commons('Joongangro jst 2.JPG'), alt: '대전 도시철도 중앙로역', credit: 'Ryuch · 위키미디어 공용 (GFDL)', link: commonsPage('Joongangro jst 2.JPG')},
+  '대전근현대사전시관': {src: commons('구 충남도청 원경.jpg'), alt: '옛 충남도청 본관(대전근현대사전시관) 전경', credit: '위키미디어 공용', link: commonsPage('구 충남도청 원경.jpg')},
+  '옛 대전형무소 망루·우물': null,
+  '대전역': {src: commons('Daejeon train station.jpg'), alt: '대전역 역사(2007년 촬영)', credit: 'Yoo Chung · 위키미디어 공용 (2007년 촬영)', link: commonsPage('Daejeon train station.jpg')}
+};
 const SHARE_TEXT_DONE = '국립대전현충원에서 시작한 추모의 발걸음을 원도심 근현대사 현장까지 이어 걸었습니다. 스탬프 4개 완주! #그들의발자취를따라서 #대전 #GeoLab';
 const SHARE_TEXT_INTRO = '현충원에서 1호선을 타고 원도심 근현대사 현장까지, 스탬프 4곳을 모으며 걷는 기억의 길. #그들의발자취를따라서 #대전 #GeoLab';
 /* ===================================== */
@@ -222,6 +234,15 @@ const dlg = $('dlg');
 const openPlace = name => {
   const p = PLACES.find(x => x.name === name), d = DETAILS[name];
   if (!p || !d) return;
+  const ph = PHOTOS[name], fig = $('dPhoto');
+  if (ph) {
+    fig.hidden = false;
+    fig.innerHTML = `<img src="${ph.src}" alt="${ph.alt}" loading="lazy" decoding="async"><figcaption>사진: <a href="${ph.link}" target="_blank" rel="noopener">${ph.credit}</a></figcaption>`;
+    fig.querySelector('img').addEventListener('error', () => { fig.hidden = true; });
+  } else {
+    fig.hidden = false;
+    fig.innerHTML = '<div class="ph-empty"><img src="mascot-sm.webp" alt="" width="45" height="48"><span>답사 사진을 준비하고 있어요</span></div>';
+  }
   $('dSub').textContent = d.kind;
   $('dTitle').textContent = name;
   $('dDesc').innerHTML = d.desc.map(t => `<p>${t}</p>`).join('');
