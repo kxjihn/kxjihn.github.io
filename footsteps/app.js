@@ -390,13 +390,18 @@ document.addEventListener('keydown', e => {
 const bar = $('glassBar'), thumb = $('glassThumb');
 const TABS = [...bar.querySelectorAll('a')].map(a => a.dataset.tab);
 let curIdx = 0;
+const lensCopy = $('glassLensCopy');
+lensCopy.innerHTML = [...bar.querySelectorAll('a')].map(a => `<span>${a.innerHTML}</span>`).join('');
 const thumbW = () => (bar.clientWidth - 12) / TABS.length;
+let stretch = 0, stretchTimer = 0;
 function moveThumb(i, x) {
   if (i >= 0) curIdx = i;
   const w = thumbW(), px = x != null ? x : curIdx * w;
-  thumb.style.opacity = i === -1 && x == null ? '0' : '1';
-  thumb.style.transform = `translate3d(${px}px,0,0) scale(${thumb.classList.contains('press') ? 1.12 : 1})`;
+  const s = thumb.classList.contains('press') ? 1.22 : 1;
+  thumb.style.transform = `translate3d(${px}px,0,0) scale(${s + stretch},${s - stretch * 0.6})`;
   thumb.style.setProperty('--hx', (72 - (px / Math.max(1, w * (TABS.length - 1))) * 44) + '%');
+  lensCopy.style.width = (bar.clientWidth - 12) + 'px';
+  lensCopy.style.transform = `translate3d(${-px}px,0,0)`;
 }
 /* 렌즈 왜곡: 크롬 계열만 backdrop-filter 안의 SVG 필터를 지원한다. 사파리·파이어폭스는 일반 블러로 대신한다. */
 const CAN_DISTORT = /Chrome\//.test(navigator.userAgent) && !/CriOS|EdgiOS|FxiOS|Firefox/.test(navigator.userAgent);
@@ -428,35 +433,52 @@ const applyLens = () => {
   bar.classList.add('lens');
 };
 new ResizeObserver(() => { moveThumb(curIdx); applyLens(); }).observe(bar);
-const g = {active: false, moved: false, startX: 0, x0: 0, x: 0, suppress: false};
+const g = {active: false, moved: false, startX: 0, startY: 0, x0: 0, x: 0, suppress: false, id: null};
+const resetThumb = () => { stretch = 0; thumb.classList.remove('press', 'drag'); moveThumb(curIdx); };
 bar.addEventListener('pointerdown', e => {
-  g.active = true; g.moved = false; g.startX = e.clientX; g.x0 = curIdx * thumbW(); g.x = g.x0;
+  g.active = true; g.moved = false; g.startX = e.clientX; g.startY = e.clientY; g.id = e.pointerId;
+  g.x0 = curIdx * thumbW(); g.x = g.x0; g.t = 0;
   thumb.classList.add('press'); moveThumb(curIdx);
 });
 bar.addEventListener('pointermove', e => {
   const r = bar.getBoundingClientRect();
   bar.style.setProperty('--mx', (e.clientX - r.left) + 'px');
   bar.style.setProperty('--my', (e.clientY - r.top) + 'px');
-  if (!g.active) return;
-  if (!g.moved && Math.abs(e.clientX - g.startX) < 6) return;
-  if (!g.moved) { try { bar.setPointerCapture(e.pointerId); } catch (err) {} }
+  if (!g.active || e.pointerId !== g.id) return;
+  const dx = e.clientX - g.startX, dy = e.clientY - g.startY;
+  if (!g.moved) {
+    if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { g.active = false; resetThumb(); return; } /* 세로로 움직이면 스크롤로 본다 */
+    if (Math.abs(dx) < 8) return;
+    try { bar.setPointerCapture(e.pointerId); } catch (err) {}
+  }
   g.moved = true;
   thumb.classList.add('drag');
-  g.x = Math.min((TABS.length - 1) * thumbW(), Math.max(0, g.x0 + e.clientX - g.startX));
+  const nx = Math.min((TABS.length - 1) * thumbW(), Math.max(0, g.x0 + dx));
+  const now = performance.now(), v = Math.abs(nx - g.x) / Math.max(1, now - (g.t || now - 16));
+  g.t = now; g.x = nx;
+  stretch = stretch * 0.5 + Math.min(0.2, v * 0.15) * 0.5;
+  clearTimeout(stretchTimer);
+  stretchTimer = setTimeout(() => { stretch = 0; if (g.active) moveThumb(-2, g.x); }, 90);
   moveThumb(-2, g.x);
 });
-const endDrag = () => {
-  if (!g.active) return;
+const endDrag = e => {
+  if (!g.active || (e && e.pointerId != null && e.pointerId !== g.id)) { if (!g.active) resetThumb(); return; }
   g.active = false;
+  const cancelled = e && e.type !== 'pointerup';
+  stretch = 0;
   thumb.classList.remove('press', 'drag');
-  if (g.moved) {
+  if (g.moved && !cancelled) {
     g.suppress = true; setTimeout(() => { g.suppress = false; }, 0);
     const i = Math.round(g.x / thumbW());
     if ('#' + TABS[i] !== location.hash) location.hash = '#' + TABS[i]; else moveThumb(i);
   } else moveThumb(curIdx);
+  g.moved = false;
 };
-bar.addEventListener('pointerup', endDrag);
-bar.addEventListener('pointercancel', endDrag);
+window.addEventListener('pointerup', endDrag);
+window.addEventListener('pointercancel', endDrag);
+bar.addEventListener('lostpointercapture', e => { if (g.active) endDrag({type: 'cancel', pointerId: e.pointerId}); });
+document.addEventListener('visibilitychange', () => { g.active = false; resetThumb(); });
+window.addEventListener('scroll', () => { if (!g.moved && g.active) { g.active = false; resetThumb(); } }, {passive: true});
 bar.addEventListener('dragstart', e => e.preventDefault());
 bar.addEventListener('click', e => { if (g.suppress) { e.preventDefault(); g.suppress = false; } }, true);
 
