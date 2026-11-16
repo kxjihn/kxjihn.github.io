@@ -393,7 +393,35 @@ function moveThumb(i, x) {
   thumb.style.transform = `translate3d(${px}px,0,0) scale(${thumb.classList.contains('press') ? 1.12 : 1})`;
   thumb.style.setProperty('--hx', (72 - (px / Math.max(1, w * (TABS.length - 1))) * 44) + '%');
 }
-new ResizeObserver(() => moveThumb(curIdx)).observe(bar);
+/* 렌즈 왜곡: 크롬 계열만 backdrop-filter 안의 SVG 필터를 지원한다. 사파리·파이어폭스는 일반 블러로 대신한다. */
+const CAN_DISTORT = /Chrome\//.test(navigator.userAgent) && !/CriOS|EdgiOS|FxiOS|Firefox/.test(navigator.userAgent);
+const displacementMap = (w, h, edge) => {
+  const ex = Math.min(0.5, edge / w), ey = Math.min(0.5, edge / h);
+  const svgMap = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><defs>` +
+    `<linearGradient id="x" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgb(255,0,0)"/><stop offset="${ex}" stop-color="rgb(128,0,0)"/><stop offset="${1 - ex}" stop-color="rgb(128,0,0)"/><stop offset="1" stop-color="rgb(0,0,0)"/></linearGradient>` +
+    `<linearGradient id="y" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgb(0,0,255)"/><stop offset="${ey}" stop-color="rgb(0,0,128)"/><stop offset="${1 - ey}" stop-color="rgb(0,0,128)"/><stop offset="1" stop-color="rgb(0,0,0)"/></linearGradient></defs>` +
+    `<rect width="${w}" height="${h}" fill="rgb(0,0,0)"/><rect width="${w}" height="${h}" fill="url(#x)"/><rect width="${w}" height="${h}" fill="url(#y)" style="mix-blend-mode:screen"/></svg>`;
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgMap);
+};
+const NS = 'http://www.w3.org/2000/svg';
+let lensSvg = null;
+const applyLens = () => {
+  if (!CAN_DISTORT) return;
+  const w = Math.round(bar.offsetWidth), h = Math.round(bar.offsetHeight);
+  if (!w || !h) return;
+  if (!lensSvg) {
+    lensSvg = document.createElementNS(NS, 'svg');
+    lensSvg.setAttribute('width', '0'); lensSvg.setAttribute('height', '0'); lensSvg.setAttribute('aria-hidden', 'true');
+    lensSvg.style.position = 'absolute';
+    lensSvg.innerHTML = '<filter id="glassLens" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feImage result="map" preserveAspectRatio="none"/><feDisplacementMap in="SourceGraphic" in2="map" scale="46" xChannelSelector="R" yChannelSelector="B"/></filter>';
+    document.body.appendChild(lensSvg);
+  }
+  const f = lensSvg.querySelector('filter'), img = lensSvg.querySelector('feImage');
+  [f, img].forEach(el => { el.setAttribute('x', '0'); el.setAttribute('y', '0'); el.setAttribute('width', w); el.setAttribute('height', h); });
+  img.setAttribute('href', displacementMap(w, h, 26));
+  bar.style.backdropFilter = 'url(#glassLens) blur(3px) saturate(1.8)';
+};
+new ResizeObserver(() => { moveThumb(curIdx); applyLens(); }).observe(bar);
 const g = {active: false, moved: false, startX: 0, x0: 0, x: 0, suppress: false};
 bar.addEventListener('pointerdown', e => {
   g.active = true; g.moved = false; g.startX = e.clientX; g.x0 = curIdx * thumbW(); g.x = g.x0;
