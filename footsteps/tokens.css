@@ -1,0 +1,136 @@
+/* =========================================================
+   그들의 발자취를 따라서 · Design Tokens v1.0
+   기준: 마스코트(무궁화 토끼) 이미지에서 추출한 색
+   구조: 1) Global → 2) Alias(의미) → 3) Component
+   규칙: 컴포넌트·페이지는 Alias/Component 토큰만 쓴다.
+   ========================================================= */
+
+/* ---------- 1. GLOBAL: 원시 값 ---------- */
+:root{
+  /* 무궁화 (꽃잎·꽃심) — 마스코트 꽃에서 추출 */
+  --mugung-900:#5c0740;
+  --mugung-700:#8b0b5e;   /* 꽃심, 브랜드 대표색 */
+  --mugung-500:#c43c91;   /* 꽃잎 */
+  --mugung-300:#d68cc4;
+  --mugung-100:#f6e3f0;
+
+  /* 귀·볼 분홍 */
+  --blush-500:#f395a5;    /* 귀 끝 */
+  --blush-300:#faaeb0;    /* 볼 */
+  --blush-100:#fff0f3;
+  --blush-50:#fff8fa;
+
+  /* 꽃술 금색 (아주 작게만) */
+  --stamen-500:#c9973f;
+  --stamen-100:#f7ebd2;
+
+  /* 외곽선 갈색 (텍스트) */
+  --bark-900:#2e1f22;
+  --bark-700:#543034;     /* 눈·외곽선 */
+  --bark-500:#7a5a5e;
+  --bark-300:#c9b6b9;
+
+  /* 몸통 흰색 */
+  --snow-0:#ffffff;
+  --snow-50:#fdfbfc;
+
+  /* 밤 테마 바탕 */
+  --night-900:#1f1419;
+  --night-800:#2a1b22;
+  --night-700:#3a2630;
+
+  /* 간격: 4px 기준 */
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+  --space-5:24px; --space-6:32px; --space-7:48px; --space-8:64px;
+
+  /* 글꼴 */
+  --font-display:'Do Hyeon','Pretendard',system-ui,sans-serif;
+  --font-body:'Pretendard',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --size-xs:13px; --size-sm:15px; --size-md:17px; --size-lg:22px;
+  --size-xl:clamp(28px,4.5vw,40px); --size-2xl:clamp(44px,8vw,72px);
+  --weight-regular:400; --weight-medium:500; --weight-bold:700;
+  --leading-tight:1.08; --leading-body:1.6;
+
+  /* 모서리·선 */
+  --radius-sm:8px; --radius-md:14px; --radius-lg:24px; --radius-pill:999px;
+  --border-thin:1px; --border-thick:2px; --border-heavy:3px;
+
+  /* 그림자: 마스코트 아래 그림자처럼 낮고 부드럽게 */
+  --shadow-1:0 1px 0 rgba(84,48,52,.08), 0 4px 14px rgba(84,48,52,.06);
+
+  /* 움직임 */
+  --duration-fast:150ms; --duration-base:300ms; --duration-slow:450ms;
+  --ease-out:cubic-bezier(.2,.8,.2,1);
+}
+
+/* ---------- 2. ALIAS: 의미 ---------- */
+:root{
+  color-scheme:light dark;
+  --color-surface-page:light-dark(var(--snow-50),var(--night-900));
+  --color-surface-raised:light-dark(var(--snow-0),var(--night-800));
+  --color-surface-tint:light-dark(var(--blush-100),var(--night-700));
+  --color-surface-hero:light-dark(var(--blush-100),var(--night-800));
+
+  --color-text-primary:light-dark(var(--bark-900),#f6eaef);
+  --color-text-secondary:light-dark(var(--bark-700),#d9c3cb);
+  --color-text-muted:light-dark(var(--bark-500),#b39aa4);
+  --color-text-brand:light-dark(var(--mugung-700),var(--mugung-300));
+  --color-text-on-brand:var(--snow-0);
+
+  --color-action-primary:light-dark(var(--mugung-700),var(--mugung-500));
+  --color-action-primary-hover:light-dark(var(--mugung-900),var(--mugung-300));
+  --color-action-secondary:light-dark(var(--mugung-500),var(--mugung-300));
+
+  --color-border-subtle:light-dark(#f0dfe4,#4a3540);
+  --color-border-strong:light-dark(var(--bark-300),#6b5560);
+  --color-border-brand:light-dark(var(--mugung-500),var(--mugung-300));
+
+  --color-accent-blush:light-dark(var(--blush-300),#b86a78);
+  --color-accent-gold:light-dark(var(--stamen-500),#e0b765);
+  --color-highlight:light-dark(var(--stamen-100),#4a3a1c);
+
+  --color-focus-ring:light-dark(var(--stamen-500),#e0b765);
+  --color-status-success:light-dark(var(--mugung-700),var(--mugung-300));
+  --color-status-info:light-dark(var(--bark-700),#d9c3cb);
+}
+:root[data-theme=light]{color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+
+/* ---------- 3. COMPONENT ---------- */
+:root{
+  /* 버튼 */
+  --button-bg-primary:var(--color-action-primary);
+  --button-bg-primary-hover:var(--color-action-primary-hover);
+  --button-ink-primary:var(--color-text-on-brand);
+  --button-border-secondary:var(--color-action-primary);
+  --button-ink-secondary:var(--color-text-brand);
+  --button-radius:var(--radius-pill);
+  --button-height:48px;
+
+  /* 카드(스탬프 지점) */
+  --card-bg:var(--color-surface-raised);
+  --card-bg-done:var(--color-surface-tint);
+  --card-border:var(--color-border-subtle);
+  --card-border-done:var(--color-border-brand);
+  --card-radius:var(--radius-md);
+
+  /* 스탬프 도장 */
+  --stamp-ring:var(--color-action-secondary);
+  --stamp-fill-done:var(--color-action-primary);
+  --stamp-ink-todo:var(--color-text-brand);
+  --stamp-ink-done:var(--color-text-on-brand);
+
+  /* 진행 막대 */
+  --progress-track:var(--color-surface-tint);
+  --progress-fill:var(--color-action-secondary);
+
+  /* 노선 */
+  --route-subway:var(--color-action-primary);   /* 1호선 */
+  --route-walk:var(--color-action-secondary);   /* 도보 */
+  --route-shuttle:var(--color-text-muted);      /* 셔틀·버스 */
+  --route-start:var(--color-accent-blush);      /* 현충원·현충원역 */
+
+  /* 안내 상자 */
+  --notice-bg:var(--color-surface-tint);
+  --notice-border:var(--color-border-subtle);
+}

@@ -1,0 +1,410 @@
+{
+/* ===== 설정: 여기만 고치면 됩니다 ===== */
+/* 카카오 지도 JavaScript 키 (developers.kakao.com > 플랫폼 > Web에 https://kxjihn.github.io 등록) */
+const KAKAO_JS_KEY = '4975632e97217d146aeb2ded4cf61634';
+/* 인증 반경(m) */
+const RADIUS = 50;
+/* 좌표: lat=위도, lng=경도. ※ 표시된 곳은 지도에서 꼭 확인 */
+const START = [
+  {name: '국립대전현충원', lat: 36.3667, lng: 127.2992},
+  {name: '현충원역', lat: 36.3590, lng: 127.3215}
+];
+const STOPS = [
+  {id: 's1', name: '중앙로역', sub: '원도심 도보 시작', lat: 36.3289, lng: 127.4275, /* ※ 확인 */
+   text: '현충원역에서 1호선을 타고 도착한 원도심의 첫걸음입니다. 여기서부터 걸어요.'},
+  {id: 's2', name: '대전근현대사전시관', sub: '옛 충남도청', lat: 36.3267, lng: 127.4204,
+   text: '1932년에 지어진 옛 충남도청 건물입니다. 대전의 근현대 이야기를 만나요. (10:00~18:00, 월요일 휴관, 무료)'},
+  {id: 's3', name: '옛 대전형무소 망루·우물', sub: '중구 목중로 34', lat: 36.3390, lng: 127.4160, /* ※ 확인 */
+   text: '독립운동가들이 거쳐 간 옛 대전형무소의 흔적입니다. 우물은 2022년 대전시 첫 등록문화재가 되었어요.'},
+  {id: 's4', name: '대전역', sub: '코스 도착', lat: 36.3323, lng: 127.4342, /* ※ 확인 */
+   text: '코스의 마지막 지점입니다. 1호선과 철도가 이어지는 곳에서 하루를 마무리해요.'}
+];
+
+/* 장소 설명: 출처로 확인한 내용만 적었어요. 고칠 때도 확인한 사실만 넣어 주세요. */
+const SRC = {
+  hall: ['대한민국 구석구석 · 대전근현대사전시관', 'https://www.ktriptips.com/kor/culture/1964617'],
+  well: ['KPI뉴스 · 옛 대전형무소 우물 대전시 첫 등록문화재', 'https://kpinews.kr/newsView/179548667587651'],
+  prison: ['프레시안 · 대전의 함성, 잊혀서는 안 될 독립운동의 역사', 'https://www.pressian.com/pages/articles/2025030111022130392'],
+  tour: ['1920~30년대 대전 원도심 투어', 'https://twig24.com/news/lifestyle/trip/2018/06/21/20180621019011'],
+  nc: ['국립대전현충원', 'https://www.dnc.go.kr']
+};
+const DETAILS = {
+  '국립대전현충원': {
+    kind: '출발 · 스탬프 없음',
+    desc: ['나라를 위해 희생하신 분들이 잠든 국립묘지예요. 국립현충원은 서울과 대전 두 곳에 있어요.', '이 코스는 참배를 마친 뒤 출발해요. 추모 공간이라 현충원 안에는 스탬프를 두지 않았어요.'],
+    info: [['주소', '대전 유성구 현충원로 251'], ['개방', '연중무휴 · 11~2월 07:00~18:00'], ['역에서', '현충원역 2번 출구 21번 승강장 무료 셔틀 ‘보훈모시미’ · 30분 간격 · 역 출발 09:05~16:35 (2024.2. 공지 기준)']],
+    tip: '<b>예절</b> · 묘역에서는 조용히 걷고, 다른 참배객의 사진을 찍지 않아요.',
+    src: ['nc']
+  },
+  '현충원역': {
+    kind: '출발 · 1호선 탑승',
+    desc: ['대전 도시철도 1호선 역이에요. 현충원을 오가는 셔틀 보훈모시미가 2번 출구에서 출발해요.', '여기서 1호선 판암 방면을 타고 원도심으로 이동해요.'],
+    info: [['노선', '대전 도시철도 1호선'], ['셔틀', '2번 출구 21번 승강장'], ['원도심까지', '중앙로역까지 약 24분 (1호선 시간표 기준)']],
+    tip: '<b>참고</b> · 보훈모시미 막차 시간은 바뀔 수 있으니 현충원 안내를 확인해 주세요.',
+    src: ['nc']
+  },
+  '중앙로역': {
+    kind: '스탬프 1 · 원도심 도보 시작',
+    desc: ['원도심 한가운데 있는 1호선 역이에요. 대전역과 한 정거장 거리예요.', '여기서부터 원도심 근현대사 현장을 걸어서 이어가요.'],
+    info: [['노선', '대전 도시철도 1호선'], ['다음 지점', '대전근현대사전시관']],
+    tip: '<b>길 팁</b> · 전시관만 바로 가려면 한 정거장 앞 중구청역 4번 출구가 더 가까워요 (약 300m).',
+    src: ['tour']
+  },
+  '대전근현대사전시관': {
+    kind: '스탬프 2 · 옛 충남도청',
+    desc: ['1932년에 지어진 옛 충남도청사 본관 1층에 있는 전시관이에요. 대전시립박물관이 운영해요.', '1930년대 초 건물 가운데 원형이 잘 남은 근대 건축물이라, 건물 자체도 볼거리예요. 안에서는 대전의 근현대사를 상설·특별 전시로 만날 수 있어요.'],
+    info: [['관람', '11~2월 10:00~18:00 (입장 17:30까지) · 3~10월 10:00~19:00'], ['휴관', '매주 월요일 (공휴일이면 다음 날) · 1월 1일 · 설·추석 당일'], ['요금', '무료'], ['문의', '042-270-4537'], ['가는 길', '중구청역 4번 출구에서 약 300m']],
+    tip: '<b>답사 팁</b> · 월요일에는 문을 닫아요. 일정을 짤 때 꼭 확인하세요.',
+    src: ['hall', 'tour']
+  },
+  '옛 대전형무소 망루·우물': {
+    kind: '스탬프 3 · 기억의 터',
+    desc: ['일제강점기 대전감옥소로 시작한 대전형무소 자리예요. 지금은 아파트 단지 사이에 망루와 우물이 남아 있어요.', '1919년 만세운동 뒤 붙잡힌 독립운동가들이 이곳에 수감되었어요. 우물은 1919년 설치된 취사장 우물로, 한국전쟁 때 민간인이 희생된 아픈 역사도 함께 남아 있어요.', '이 우물은 2022년 대전시 첫 등록문화재가 되었어요.'],
+    info: [['남은 것', '망루, 우물'], ['문화유산', '구 대전형무소 우물 · 2022년 대전시 등록문화재']],
+    tip: '<b>예절</b> · 희생의 아픔이 남은 곳이자 주민이 사는 곳이에요. 조용히 둘러봐 주세요.',
+    src: ['well', 'prison']
+  },
+  '대전역': {
+    kind: '스탬프 4 · 코스 도착',
+    desc: ['1905년 경부선이 열리며 대전이 철도를 중심으로 자라기 시작한 곳이에요.', '1호선과 철도가 이어지는 대전역에서 오늘의 발자취를 마무리해요.'],
+    info: [['노선', '경부선 철도 · 대전 도시철도 1호선']],
+    tip: '<b>마무리</b> · 스탬프 4개를 모두 찍으면 완주 화면에서 공유할 수 있어요.',
+    src: ['tour']
+  }
+};
+const SHARE_TEXT_DONE = '국립대전현충원에서 시작한 추모의 발걸음을 원도심 근현대사 현장까지 이어 걸었습니다. 스탬프 4개 완주! #그들의발자취를따라서 #대전 #GeoLab';
+const SHARE_TEXT_INTRO = '현충원에서 1호선을 타고 원도심 근현대사 현장까지, 스탬프 4곳을 모으며 걷는 기억의 길. #그들의발자취를따라서 #대전 #GeoLab';
+/* ===================================== */
+
+const $ = id => document.getElementById(id);
+const PLACES = START.concat(STOPS);
+const KEY = 'footsteps-stamps-v1';
+const PAGE_URL = 'https://kxjihn.github.io/footsteps/';
+
+/* 저장: 지점별 스탬프 여부와 완주 날짜만 (좌표·시간은 저장하지 않음) */
+let stamped = {};
+try { stamped = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { stamped = {}; }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(stamped)); } catch (e) {} };
+
+/* 토큰 색을 실제 rgb로 바꿔 지도에 쓴다 */
+const probe = document.createElement('i');
+probe.hidden = true;
+document.body.appendChild(probe);
+const tok = n => { probe.style.color = 'var(' + n + ')'; return getComputedStyle(probe).color; };
+
+const dist = (a, b) => {
+  const R = 6371000, r = x => x * Math.PI / 180;
+  const dLat = r(b.lat - a.lat), dLng = r(b.lng - a.lng);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+};
+const fmt = m => m >= 1000 ? (m / 1000).toFixed(1) + 'km' : Math.round(m) + 'm';
+const kakaoTo = p => 'https://map.kakao.com/link/to/' + encodeURIComponent(p.name) + ',' + p.lat + ',' + p.lng;
+const doneCount = () => STOPS.filter(s => stamped[s.id]).length;
+const nextIndex = () => STOPS.findIndex(s => !stamped[s.id]);
+
+/* ---------- 탭 이동 (#home #map #stamps #finish) ---------- */
+const VIEWS = ['home', 'intro', 'map', 'stamps', 'finish'];
+const show = () => {
+  let v = (location.hash || '#home').slice(1);
+  if (!VIEWS.includes(v)) v = 'home';
+  document.querySelectorAll('.view').forEach(el => { el.hidden = el.dataset.view !== v; });
+  document.querySelectorAll('.glass-bar a').forEach(a => {
+    if (a.dataset.tab === v) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+  });
+  document.body.classList.toggle('no-nav', v === 'intro');
+  moveThumb(TABS.indexOf(v));
+  window.scrollTo(0, 0);
+  if (v === 'intro') { $('track').scrollLeft = 0; setSlide(0); }
+  if (v === 'map') { drawSvg(); initKakao(); if (kmap) kmap.relayout(); }
+};
+window.addEventListener('hashchange', show);
+
+/* ---------- 스탬프 ---------- */
+let justStamped = '';
+const renderStamps = () => {
+  const ni = nextIndex();
+  $('stops').innerHTML = STOPS.map((s, i) => {
+    const done = !!stamped[s.id], nx = STOPS[i + 1];
+    const cls = ['stop', done ? 'done' : '', i === ni ? 'next' : '', s.id === justStamped ? 'just' : ''].join(' ').trim();
+    return `<li class="${cls}">
+      <div class="head"><span class="stamp" aria-hidden="true">${done ? '✓' : i + 1}</span>
+      <div><h3>${s.name}</h3><p class="meta">${s.sub}${done ? ' · 스탬프 완료' : (i === ni ? ' · 다음 목적지' : '')}</p></div></div>
+      ${done ? `<p class="body">${s.text}</p>${nx ? `<p class="next-hint">다음: ${nx.name} · 직선 약 ${fmt(dist(s, nx))}</p>` : ''}` : ''}
+      <div class="row">
+        ${done ? '' : `<button class="btn sm" type="button" data-id="${s.id}">도착 확인</button>`}
+        <button class="btn sec sm" type="button" data-open="${s.name}">장소 설명</button>
+        <a class="btn sec sm" href="${kakaoTo(s)}" target="_blank" rel="noopener">길찾기</a>
+        <span class="msg" id="m-${s.id}" aria-live="polite"></span>
+      </div></li>`;
+  }).join('');
+  justStamped = '';
+  const n = doneCount();
+  $('count').textContent = n + ' / ' + STOPS.length;
+  $('bar').style.width = (n / STOPS.length * 100) + '%';
+  $('barwrap').setAttribute('aria-valuenow', n);
+};
+
+const renderPlaces = () => {
+  $('places').innerHTML = PLACES.map((p, i) => {
+    const st = STOPS.find(s => s.name === p.name);
+    const done = st && stamped[st.id];
+    const next = PLACES[i + 1];
+    const dot = st ? `<span class="dot${done ? ' done' : ''}">${done ? '✓' : STOPS.indexOf(st) + 1}</span>` : '<span class="dot start" aria-hidden="true"></span>';
+    const leg = !next ? '' : i === 0 ? '셔틀·버스로 현충원역' : i === 1 ? '1호선으로 ' + next.name : '도보 직선 약 ' + fmt(dist(p, next));
+    return `<li><button class="place" type="button" data-open="${p.name}">${dot}<span><b>${p.name}</b><small>${DETAILS[p.name].kind}</small>${leg ? `<span class="walk">다음 → ${leg}</span>` : ''}</span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></li>`;
+  }).join('');
+};
+
+const renderFinish = () => {
+  const n = doneCount(), all = n === STOPS.length, left = STOPS.length - n;
+  $('h-finish').textContent = all ? '완주했어요' : `아직 ${left}곳 남았어요`;
+  $('finishSub').textContent = all ? '현충원에서 시작한 발걸음을 원도심 근현대사 현장까지 이어 걸었어요.' : '스탬프 4개를 모두 모으면 완주 배지와 완주 공유가 열려요.';
+  $('badge').hidden = !all;
+  $('badgeDate').textContent = all && stamped.doneAt ? stamped.doneAt + ' 완주' : '';
+  $('goStamps').hidden = all;
+  $('shareH').textContent = all ? '완주 공유' : '코스 소개 공유';
+  $('shareP').textContent = all ? '함께 걸을 친구에게 이 길을 알려 주세요.' : '완주 전에도 코스를 친구에게 알릴 수 있어요.';
+  const t = shareText();
+  $('xBtn').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(t) + '&url=' + encodeURIComponent(PAGE_URL);
+  $('fbBtn').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(PAGE_URL);
+};
+const shareText = () => doneCount() === STOPS.length ? SHARE_TEXT_DONE : SHARE_TEXT_INTRO;
+
+const render = () => {
+  renderStamps(); renderPlaces(); renderFinish(); drawSvg();
+  if (refreshPins) refreshPins();
+};
+
+const stamp = s => {
+  stamped[s.id] = true;
+  if (doneCount() === STOPS.length && !stamped.doneAt) {
+    const d = new Date();
+    stamped.doneAt = d.getFullYear() + '.' + (d.getMonth() + 1) + '.' + d.getDate() + '.';
+  }
+  justStamped = s.id;
+  save();
+  render();
+  if (navigator.vibrate) { try { navigator.vibrate(30); } catch (e) {} }
+  if (doneCount() === STOPS.length) setTimeout(() => { location.hash = '#finish'; }, 700);
+};
+
+$('stops').addEventListener('click', e => {
+  const b = e.target.closest('button[data-id]');
+  if (!b) return;
+  const s = STOPS.find(x => x.id === b.dataset.id);
+  const msg = $('m-' + s.id);
+  if ($('demo').checked) { stamp(s); return; }
+  if (!('geolocation' in navigator)) { msg.textContent = '이 기기에서는 위치 확인을 쓸 수 없어요.'; return; }
+  b.disabled = true;
+  msg.textContent = '위치를 확인하는 중…';
+  /* 위치는 이 버튼을 누를 때 한 번만 읽고, 거리 계산 뒤 바로 버린다 */
+  navigator.geolocation.getCurrentPosition(pos => {
+    const d = dist({lat: pos.coords.latitude, lng: pos.coords.longitude}, s);
+    b.disabled = false;
+    if (d <= RADIUS) stamp(s);
+    else msg.textContent = `${s.name}까지 약 ${fmt(d)} 남았어요. ${RADIUS}m 안에서 다시 눌러 주세요.`;
+  }, err => {
+    b.disabled = false;
+    msg.textContent = err && err.code === 1 ? '위치 권한이 꺼져 있어요. 브라우저 설정에서 이 사이트의 위치를 허용해 주세요.' : '위치를 확인하지 못했어요. 잠시 뒤 다시 눌러 주세요.';
+  }, {enableHighAccuracy: true, timeout: 12000, maximumAge: 0});
+});
+$('demo').addEventListener('change', () => document.body.classList.toggle('demo', $('demo').checked));
+$('reset').addEventListener('click', () => { stamped = {}; save(); render(); });
+
+/* ---------- 장소 설명 창 ---------- */
+const dlg = $('dlg');
+const openPlace = name => {
+  const p = PLACES.find(x => x.name === name), d = DETAILS[name];
+  if (!p || !d) return;
+  $('dSub').textContent = d.kind;
+  $('dTitle').textContent = name;
+  $('dDesc').innerHTML = d.desc.map(t => `<p>${t}</p>`).join('');
+  $('dInfo').innerHTML = (d.info || []).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+  $('dInfo').hidden = !(d.info || []).length;
+  $('dTip').innerHTML = d.tip || '';
+  $('dTip').hidden = !d.tip;
+  const st = STOPS.find(x => x.name === name);
+  $('dActs').innerHTML = `<a class="btn sm" href="${kakaoTo(p)}" target="_blank" rel="noopener">카카오맵 길찾기</a>` + (st ? '<a class="btn sec sm" href="#stamps" id="dGo">스탬프 하러 가기</a>' : '');
+  $('dSrc').innerHTML = '출처: ' + (d.src || []).map(k => `<a href="${SRC[k][1]}" target="_blank" rel="noopener">${SRC[k][0]}</a>`).join(' · ');
+  if (st) $('dGo').addEventListener('click', () => dlg.close());
+  if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
+};
+document.addEventListener('click', e => { const o = e.target.closest('[data-open]'); if (o) openPlace(o.dataset.open); });
+$('dClose').addEventListener('click', () => dlg.close());
+dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+
+/* ---------- 기본 노선도 (카카오 지도를 못 쓸 때) ---------- */
+const svg = $('svgmap');
+function drawSvg() {
+  if (svg.hidden) return;
+  const W = svg.clientWidth, H = svg.clientHeight;
+  if (!W || !H) return;
+  const la = PLACES.map(p => p.lat), ln = PLACES.map(p => p.lng);
+  const minLa = Math.min(...la), maxLa = Math.max(...la), minLn = Math.min(...ln), maxLn = Math.max(...ln);
+  const pad = W < 420 ? 40 : 56, kx = Math.cos(36.34 * Math.PI / 180);
+  const k = Math.min((W - pad * 2) / ((maxLn - minLn) * kx), (H - pad * 2) / (maxLa - minLa));
+  const ox = (W - (maxLn - minLn) * kx * k) / 2, oy = (H - (maxLa - minLa) * k) / 2;
+  const P = p => [ox + (p.lng - minLn) * kx * k, oy + (maxLa - p.lat) * k];
+  const seg = (a, b, st) => { const [x1, y1] = P(a), [x2, y2] = P(b); return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-linecap="round" fill="none" ${st}/>`; };
+  const c = {sub: tok('--route-subway'), walk: tok('--route-walk'), bus: tok('--route-shuttle'), start: tok('--route-start'), card: tok('--color-surface-raised'), ink: tok('--color-text-secondary'), onb: tok('--stamp-ink-done'), done: tok('--stamp-fill-done')};
+  let o = seg(START[0], START[1], `stroke="${c.bus}" stroke-width="2.5" stroke-dasharray="2 6"`);
+  o += seg(START[1], STOPS[0], `stroke="${c.sub}" stroke-width="7"`);
+  for (let i = 0; i < STOPS.length - 1; i++) o += seg(STOPS[i], STOPS[i + 1], `stroke="${c.walk}" stroke-width="3.5" stroke-dasharray="8 6"`);
+  START.forEach(p => { const [x, y] = P(p); o += `<circle data-p="${p.name}" cx="${x}" cy="${y}" r="16" fill="transparent"/><circle data-p="${p.name}" cx="${x}" cy="${y}" r="9" fill="${c.card}" stroke="${c.start}" stroke-width="4"/>`; });
+  STOPS.forEach((p, i) => {
+    const [x, y] = P(p), d = stamped[p.id];
+    o += `<circle data-p="${p.name}" cx="${x}" cy="${y}" r="14" fill="${d ? c.done : c.card}" stroke="${d ? c.done : c.walk}" stroke-width="3"/>`;
+    o += `<text x="${x}" y="${y + 5}" text-anchor="middle" font-size="14" font-weight="700" font-family="Pretendard,sans-serif" style="pointer-events:none" fill="${d ? c.onb : c.sub}">${d ? '✓' : i + 1}</text>`;
+  });
+  const [ax, ay] = P(START[0]), [bx, by] = P(START[1]);
+  o += `<text x="${ax}" y="${ay - 18}" font-size="13" font-family="Pretendard,sans-serif" fill="${c.ink}">현충원</text>`;
+  o += `<text x="${bx}" y="${by + 28}" font-size="13" font-family="Pretendard,sans-serif" fill="${c.ink}">현충원역</text>`;
+  svg.innerHTML = o;
+}
+new ResizeObserver(drawSvg).observe(svg);
+svg.addEventListener('click', e => { const t = e.target.closest('[data-p]'); if (t) openPlace(t.dataset.p); });
+
+/* ---------- 카카오 지도: 택배한눈처럼 한 번만 불러오고, 실패하면 다음에 다시 시도 ---------- */
+let kakaoLoading = null, kmap = null, refreshPins = null;
+const loadKakao = () => {
+  if (!KAKAO_JS_KEY) return Promise.reject(new Error('no key'));
+  if (window.kakao && window.kakao.maps && window.kakao.maps.Map) return Promise.resolve(window.kakao);
+  if (kakaoLoading) return kakaoLoading;
+  kakaoLoading = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=' + encodeURIComponent(KAKAO_JS_KEY);
+    const fail = () => { kakaoLoading = null; s.remove(); reject(new Error('Kakao SDK 로드 실패')); };
+    const timer = setTimeout(fail, 8000);
+    s.onload = () => { clearTimeout(timer); try { window.kakao.maps.load(() => resolve(window.kakao)); } catch (e) { fail(); } };
+    s.onerror = () => { clearTimeout(timer); fail(); };
+    document.head.appendChild(s);
+  });
+  return kakaoLoading;
+};
+function initKakao() {
+  if (kmap) return;
+  loadKakao().then(kakao => {
+    if (kmap) return;
+    const box = $('kmap');
+    box.hidden = false; svg.hidden = true;
+    $('maptools').hidden = false;
+    const LL = p => new kakao.maps.LatLng(p.lat, p.lng);
+    kmap = new kakao.maps.Map(box, {center: LL(STOPS[1]), level: 7});
+    kmap.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT);
+    const line = (path, color, w, style) => new kakao.maps.Polyline({map: kmap, path: path.map(LL), strokeWeight: w, strokeColor: color, strokeOpacity: .95, strokeStyle: style});
+    line(START, tok('--route-shuttle'), 3, 'shortdot');
+    line([START[1], STOPS[0]], tok('--route-subway'), 7, 'solid');
+    line(STOPS, tok('--route-walk'), 4, 'dash');
+    START.forEach(p => {
+      const el = document.createElement('button');
+      el.type = 'button'; el.className = 'klabel'; el.textContent = p.name;
+      el.onclick = () => openPlace(p.name);
+      new kakao.maps.CustomOverlay({map: kmap, position: LL(p), yAnchor: 1.6, content: el});
+    });
+    const pins = STOPS.map(p => {
+      const el = document.createElement('button');
+      el.type = 'button'; el.className = 'kpin'; el.setAttribute('aria-label', p.name + ' 설명 보기');
+      el.onclick = () => openPlace(p.name);
+      new kakao.maps.CustomOverlay({map: kmap, position: LL(p), yAnchor: .5, content: el});
+      return el;
+    });
+    refreshPins = () => pins.forEach((el, i) => { const d = stamped[STOPS[i].id]; el.classList.toggle('done', !!d); el.textContent = d ? '✓' : i + 1; });
+    refreshPins();
+    const fit = arr => { const b = new kakao.maps.LatLngBounds(); arr.forEach(p => b.extend(LL(p))); kmap.setBounds(b, 40, 40, 40, 40); };
+    $('viewAll').onclick = () => fit(PLACES);
+    $('viewOld').onclick = () => fit(STOPS);
+    fit(PLACES);
+    new ResizeObserver(() => kmap.relayout()).observe(box);
+  }).catch(() => { /* 키·도메인 문제면 기본 노선도를 그대로 쓴다 */ });
+}
+
+/* ---------- 공유 ---------- */
+const copy = async () => {
+  try { await navigator.clipboard.writeText(shareText() + ' ' + PAGE_URL); $('shareMsg').textContent = '복사했어요. SNS나 카톡에 붙여 넣어 주세요.'; }
+  catch (e) { $('shareMsg').textContent = '자동 복사가 안 돼요. 주소를 직접 복사해 주세요: ' + PAGE_URL; }
+};
+$('copyBtn').addEventListener('click', copy);
+$('shareBtn').addEventListener('click', async () => {
+  if (navigator.share) {
+    try { await navigator.share({title: '그들의 발자취를 따라서', text: shareText(), url: PAGE_URL}); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  copy();
+});
+
+/* ---------- 소개 카드 (택배한눈 Intro처럼 옆으로 넘김) ---------- */
+const track = $('track');
+const slides = [...track.querySelectorAll('.slide')];
+let slideIdx = 0;
+$('dots').innerHTML = slides.map((_, i) => `<button type="button" role="tab" aria-label="${i + 1}번째 소개" aria-selected="${i === 0}"></button>`).join('');
+const dots = [...$('dots').children];
+function setSlide(i) {
+  slideIdx = i;
+  dots.forEach((d, k) => d.setAttribute('aria-selected', k === i));
+  $('introNext').textContent = i === slides.length - 1 ? '코스 시작하기' : '다음';
+}
+const goSlide = i => track.scrollTo({left: Math.max(0, Math.min(slides.length - 1, i)) * track.clientWidth, behavior: 'smooth'});
+track.addEventListener('scroll', () => { const i = Math.round(track.scrollLeft / track.clientWidth); if (i !== slideIdx) setSlide(i); }, {passive: true});
+dots.forEach((d, i) => d.addEventListener('click', () => goSlide(i)));
+const finishIntro = () => { try { localStorage.setItem('footsteps-intro', '1'); } catch (e) {} };
+$('introNext').addEventListener('click', () => {
+  if (slideIdx === slides.length - 1) { finishIntro(); location.hash = '#map'; }
+  else goSlide(slideIdx + 1);
+});
+document.querySelector('[data-intro-done]').addEventListener('click', finishIntro);
+document.addEventListener('keydown', e => {
+  if ($('v-intro').hidden) return;
+  if (e.key === 'ArrowRight') goSlide(slideIdx + 1);
+  if (e.key === 'ArrowLeft') goSlide(slideIdx - 1);
+});
+
+/* ---------- 리퀴드 글래스 하단 메뉴 (택배한눈 GlassNav를 옮김) ---------- */
+const bar = $('glassBar'), thumb = $('glassThumb');
+const TABS = [...bar.querySelectorAll('a')].map(a => a.dataset.tab);
+let curIdx = 0;
+const thumbW = () => (bar.clientWidth - 12) / TABS.length;
+function moveThumb(i, x) {
+  if (i >= 0) curIdx = i;
+  const w = thumbW(), px = x != null ? x : curIdx * w;
+  thumb.style.opacity = i === -1 && x == null ? '0' : '1';
+  thumb.style.transform = `translate3d(${px}px,0,0) scale(${thumb.classList.contains('press') ? 1.12 : 1})`;
+  thumb.style.setProperty('--hx', (72 - (px / Math.max(1, w * (TABS.length - 1))) * 44) + '%');
+}
+new ResizeObserver(() => moveThumb(curIdx)).observe(bar);
+const g = {active: false, moved: false, startX: 0, x0: 0, x: 0, suppress: false};
+bar.addEventListener('pointerdown', e => {
+  g.active = true; g.moved = false; g.startX = e.clientX; g.x0 = curIdx * thumbW(); g.x = g.x0;
+  thumb.classList.add('press'); moveThumb(curIdx);
+});
+bar.addEventListener('pointermove', e => {
+  const r = bar.getBoundingClientRect();
+  bar.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+  bar.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  if (!g.active) return;
+  if (!g.moved && Math.abs(e.clientX - g.startX) < 6) return;
+  if (!g.moved) { try { bar.setPointerCapture(e.pointerId); } catch (err) {} }
+  g.moved = true;
+  thumb.classList.add('drag');
+  g.x = Math.min((TABS.length - 1) * thumbW(), Math.max(0, g.x0 + e.clientX - g.startX));
+  moveThumb(-2, g.x);
+});
+const endDrag = () => {
+  if (!g.active) return;
+  g.active = false;
+  thumb.classList.remove('press', 'drag');
+  if (g.moved) {
+    g.suppress = true; setTimeout(() => { g.suppress = false; }, 0);
+    const i = Math.round(g.x / thumbW());
+    if ('#' + TABS[i] !== location.hash) location.hash = '#' + TABS[i]; else moveThumb(i);
+  } else moveThumb(curIdx);
+};
+bar.addEventListener('pointerup', endDrag);
+bar.addEventListener('pointercancel', endDrag);
+bar.addEventListener('dragstart', e => e.preventDefault());
+bar.addEventListener('click', e => { if (g.suppress) { e.preventDefault(); g.suppress = false; } }, true);
+
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
+render();
+show();
+}
