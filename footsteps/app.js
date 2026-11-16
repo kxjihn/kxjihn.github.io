@@ -145,7 +145,7 @@ const renderStamps = () => {
     const done = !!stamped[s.id], nx = STOPS[i + 1];
     const cls = ['stop', done ? 'done' : '', i === ni ? 'next' : '', s.id === justStamped ? 'just' : ''].join(' ').trim();
     return `<li class="${cls}">
-      <div class="head"><span class="stamp" aria-hidden="true">${done ? '✓' : i + 1}</span>
+      <div class="head"><span class="stamp${done ? ' art' : ''}" aria-hidden="true">${done ? stampSvg(s.id, 52) : i + 1}</span>
       <div><h3>${s.name}</h3><p class="meta">${s.sub}${done ? ' · 스탬프 완료' : (i === ni ? ' · 지금 갈 곳' : ' · ' + STOPS[i - 1].name + ' 다음')}</p></div></div>
       ${done ? `<p class="body">${s.text}</p>${nx ? `<p class="next-hint">다음: ${nx.name} · 직선 약 ${fmt(dist(s, nx))}</p>` : ''}` : ''}
       <div class="row">
@@ -205,11 +205,20 @@ const stamp = s => {
   if (doneCount() === STOPS.length) setTimeout(() => { location.hash = '#finish'; }, 1300);
 };
 
+/* 장소별 도장 그림 (직접 그린 선 그림, viewBox 0 0 120 120) */
+const STAMP_ART = {
+  s1: '<rect x="38" y="24" width="44" height="50" rx="11"/><rect x="45" y="32" width="30" height="16" rx="3"/><circle cx="48" cy="62" r="3.5"/><circle cx="72" cy="62" r="3.5"/><path d="M47 74l-5 10M73 74l5 10M32 86h56M56 24v-6h8v6"/>',
+  s2: '<path d="M22 82h76M26 82V54h68v28M50 82V40h20v42M46 40h28M60 40v-8M60 32l6 3-6 3"/><path d="M33 62v8M40 62v8M80 62v8M87 62v8M55 50v6M65 50v6"/><path d="M55 82v-10a5 5 0 0 1 10 0v10"/>',
+  s3: '<path d="M30 84h62M38 84l4-34h12l4 34M36 50h24l-12-12zM44 60h8M43 70h10"/><path d="M48 38v-6"/><ellipse cx="80" cy="70" rx="12" ry="4"/><path d="M68 70v12a12 4 0 0 0 24 0V70M72 62V52h16v10M80 52v-6"/>',
+  s4: '<path d="M18 50h84M24 50v32h72V50M18 82h84"/><circle cx="60" cy="38" r="9"/><path d="M60 33v5l3 2M51 46h18"/><path d="M34 82V68a6 6 0 0 1 12 0v14M54 82V68a6 6 0 0 1 12 0v14M74 82V68a6 6 0 0 1 12 0v14"/>'
+};
+const stampSvg = (id, size, label) => `<svg viewBox="0 0 120 120" width="${size}" height="${size}" aria-hidden="true"><circle cx="60" cy="60" r="55" fill="#fff8fa" stroke="currentColor" stroke-width="5"/><circle cx="60" cy="60" r="47" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 4"/><g transform="translate(0 ${label ? -4 : 2}) scale(1)" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">${STAMP_ART[id]}</g>${label ? `<text x="60" y="103" text-anchor="middle" font-size="13" font-family="Do Hyeon,sans-serif" fill="currentColor">${label}</text>` : ''}</svg>`;
+
 /* 스탬프 획득 효과: 도장이 한 번 찍히고 사라진다 */
 let fxTimer = 0;
 const stampFx = s => {
   const fx = $('stampFx');
-  $('fxNum').textContent = doneCount() + ' / ' + STOPS.length;
+  $('fxSeal').innerHTML = stampSvg(s.id, 132, doneCount() + ' / ' + STOPS.length);
   $('fxTitle').textContent = s.name + ' 스탬프 획득';
   fx.hidden = true; void fx.offsetWidth; fx.hidden = false;
   clearTimeout(fxTimer);
