@@ -202,7 +202,7 @@ const stamp = s => {
   save();
   render();
   stampFx(s);
-  if (doneCount() === STOPS.length) setTimeout(() => { location.hash = '#finish'; }, 1650);
+  if (doneCount() === STOPS.length) setTimeout(openBadge, 1650);
 };
 
 /* 장소별 도장 그림 (직접 그린 선 그림, viewBox 0 0 120 120) */
@@ -254,6 +254,18 @@ $('stops').addEventListener('click', e => {
 });
 $('demo').addEventListener('change', () => document.body.classList.toggle('demo', $('demo').checked));
 $('reset').addEventListener('click', () => { stamped = {}; save(); render(); });
+
+/* ---------- 금색 완주 배지 ---------- */
+const badgeDlg = $('badgeDlg');
+function openBadge() {
+  $('bmStamps').innerHTML = STOPS.map(s => stampSvg(s.id, 52)).join('');
+  $('bmDate').textContent = stamped.doneAt ? stamped.doneAt + ' 완주' : '';
+  if (navigator.vibrate) { try { navigator.vibrate([30, 60, 30]); } catch (e) {} }
+  if (typeof badgeDlg.showModal === 'function') badgeDlg.showModal(); else badgeDlg.setAttribute('open', '');
+}
+$('bmClose').addEventListener('click', () => badgeDlg.close());
+$('bmShare').addEventListener('click', () => badgeDlg.close());
+$('badge').addEventListener('click', openBadge);
 
 /* ---------- 장소 설명 창 ---------- */
 const dlg = $('dlg');
