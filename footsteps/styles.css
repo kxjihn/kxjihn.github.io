@@ -278,3 +278,4 @@ dialog{overflow:hidden}
 .fx-petals i:nth-child(3n+2){width:9px;height:14px;background:var(--color-action-primary)}
 @keyframes fx-petal{0%{opacity:0;transform:translate(0,0) rotate(0) scale(.6)}15%{opacity:.95}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(1)}}
 @media(prefers-reduced-motion:reduce){.fx-petals{display:none}}
+.replay{color:var(--color-text-brand);text-underline-offset:4px;display:inline-flex;min-height:44px;align-items:center}
