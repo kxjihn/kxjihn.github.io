@@ -201,8 +201,20 @@ const stamp = s => {
   justStamped = s.id;
   save();
   render();
-  if (navigator.vibrate) { try { navigator.vibrate(30); } catch (e) {} }
-  if (doneCount() === STOPS.length) setTimeout(() => { location.hash = '#finish'; }, 700);
+  stampFx(s);
+  if (doneCount() === STOPS.length) setTimeout(() => { location.hash = '#finish'; }, 1300);
+};
+
+/* 스탬프 획득 효과: 도장이 한 번 찍히고 사라진다 */
+let fxTimer = 0;
+const stampFx = s => {
+  const fx = $('stampFx');
+  $('fxNum').textContent = doneCount() + ' / ' + STOPS.length;
+  $('fxTitle').textContent = s.name + ' 스탬프 획득';
+  fx.hidden = true; void fx.offsetWidth; fx.hidden = false;
+  clearTimeout(fxTimer);
+  fxTimer = setTimeout(() => { fx.hidden = true; }, 1250);
+  if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) {} }
 };
 
 $('stops').addEventListener('click', e => {
