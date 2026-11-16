@@ -167,7 +167,6 @@ const renderFinish = () => {
   $('shareP').textContent = all ? '함께 걸을 친구에게 이 길을 알려 주세요.' : '완주 전에도 코스를 친구에게 알릴 수 있어요.';
   const t = shareText();
   $('xBtn').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(t) + '&url=' + encodeURIComponent(PAGE_URL);
-  $('fbBtn').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(PAGE_URL);
 };
 const shareText = () => doneCount() === STOPS.length ? SHARE_TEXT_DONE : SHARE_TEXT_INTRO;
 
@@ -325,6 +324,29 @@ const copy = async () => {
   catch (e) { $('shareMsg').textContent = '자동 복사가 안 돼요. 주소를 직접 복사해 주세요: ' + PAGE_URL; }
 };
 $('copyBtn').addEventListener('click', copy);
+/* 인스타그램은 웹 공유 주소가 없어서: 휴대폰 공유창(이미지 포함)으로 보내고, 안 되면 문구 복사 후 인스타그램을 연다 */
+let shareImg = null;
+const getShareImg = async () => {
+  if (shareImg) return shareImg;
+  const r = await fetch('og.png');
+  shareImg = new File([await r.blob()], 'footsteps.png', {type: 'image/png'});
+  return shareImg;
+};
+$('igBtn').addEventListener('click', async () => {
+  const text = shareText() + ' ' + PAGE_URL;
+  try {
+    const f = await getShareImg();
+    if (navigator.canShare && navigator.canShare({files: [f]})) {
+      try { await navigator.clipboard.writeText(text); } catch (e) {}
+      await navigator.share({files: [f], text});
+      $('shareMsg').textContent = '공유창에서 인스타그램을 골라 주세요. 문구와 링크는 복사해 두었어요.';
+      return;
+    }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(text); $('shareMsg').textContent = '문구와 링크를 복사했어요. 인스타그램 스토리나 게시물에 붙여 넣어 주세요.'; }
+  catch (e) { $('shareMsg').textContent = '인스타그램에 이 주소를 붙여 넣어 주세요: ' + PAGE_URL; }
+  window.open('https://www.instagram.com/', '_blank', 'noopener');
+});
 $('shareBtn').addEventListener('click', async () => {
   if (navigator.share) {
     try { await navigator.share({title: '그들의 발자취를 따라서', text: shareText(), url: PAGE_URL}); return; }
