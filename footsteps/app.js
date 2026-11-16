@@ -418,13 +418,14 @@ const applyLens = () => {
     lensSvg = document.createElementNS(NS, 'svg');
     lensSvg.setAttribute('width', '0'); lensSvg.setAttribute('height', '0'); lensSvg.setAttribute('aria-hidden', 'true');
     lensSvg.style.position = 'absolute';
-    lensSvg.innerHTML = '<filter id="glassLens" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feImage result="map" preserveAspectRatio="none"/><feDisplacementMap in="SourceGraphic" in2="map" scale="46" xChannelSelector="R" yChannelSelector="B"/></filter>';
+    lensSvg.innerHTML = '<filter id="glassLens" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feImage result="map" preserveAspectRatio="none"/><feDisplacementMap in="SourceGraphic" in2="map" scale="70" xChannelSelector="R" yChannelSelector="B"/></filter>';
     document.body.appendChild(lensSvg);
   }
   const f = lensSvg.querySelector('filter'), img = lensSvg.querySelector('feImage');
   [f, img].forEach(el => { el.setAttribute('x', '0'); el.setAttribute('y', '0'); el.setAttribute('width', w); el.setAttribute('height', h); });
-  img.setAttribute('href', displacementMap(w, h, 26));
-  bar.style.backdropFilter = 'url(#glassLens) blur(3px) saturate(1.8)';
+  img.setAttribute('href', displacementMap(w, h, 30));
+  bar.style.backdropFilter = 'url(#glassLens) blur(2px) saturate(1.9)';
+  bar.classList.add('lens');
 };
 new ResizeObserver(() => { moveThumb(curIdx); applyLens(); }).observe(bar);
 const g = {active: false, moved: false, startX: 0, x0: 0, x: 0, suppress: false};

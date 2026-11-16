@@ -223,3 +223,6 @@ dialog::backdrop{background:rgba(46,31,34,.45)}
   .info{grid-template-columns:1fr;gap:2px}.info dd{margin-bottom:var(--space-2)}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* 왜곡이 켜지면 유리를 더 투명하게 해서 휘어진 뒤 화면이 잘 보이게 */
+.glass-bar.lens{background:linear-gradient(135deg,rgb(255 255 255/.32),rgb(255 240 243/.08) 55%,rgb(255 255 255/.18))}
