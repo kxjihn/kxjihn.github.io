@@ -202,7 +202,7 @@ const stamp = s => {
   save();
   render();
   stampFx(s);
-  if (doneCount() === STOPS.length) setTimeout(() => { location.hash = '#finish'; }, 1300);
+  if (doneCount() === STOPS.length) setTimeout(() => { location.hash = '#finish'; }, 1650);
 };
 
 /* 장소별 도장 그림 (직접 그린 선 그림, viewBox 0 0 120 120) */
@@ -220,9 +220,14 @@ const stampFx = s => {
   const fx = $('stampFx');
   $('fxSeal').innerHTML = stampSvg(s.id, 132, doneCount() + ' / ' + STOPS.length);
   $('fxTitle').textContent = s.name + ' 스탬프 획득';
+  const many = doneCount() === STOPS.length ? 18 : 10;
+  $('fxPetals').innerHTML = Array.from({length: many}, (_, k) => {
+    const a = (k / many) * Math.PI * 2 + Math.random() * .6, d = 80 + Math.random() * 80;
+    return `<i style="--dx:${Math.round(Math.cos(a) * d)}px;--dy:${Math.round(Math.sin(a) * d + 50)}px;--rot:${Math.round(Math.random() * 360 - 180)}deg;animation-delay:${(.18 + Math.random() * .12).toFixed(2)}s"></i>`;
+  }).join('');
   fx.hidden = true; void fx.offsetWidth; fx.hidden = false;
   clearTimeout(fxTimer);
-  fxTimer = setTimeout(() => { fx.hidden = true; }, 1250);
+  fxTimer = setTimeout(() => { fx.hidden = true; }, 1600);
   if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) {} }
 };
 

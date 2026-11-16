@@ -260,7 +260,7 @@ dialog{overflow:hidden}
 
 /* 스탬프 획득 효과: 도장이 한 번 찍히고 사라진다 */
 .stamp-fx{position:fixed;inset:0;z-index:60;display:grid;place-items:center;pointer-events:none}
-.fx-seal{display:flex;flex-direction:column;align-items:center;gap:var(--space-2);color:var(--color-action-primary);animation:fx-slam 1.2s cubic-bezier(.2,.9,.25,1) forwards}
+.fx-seal{grid-area:1/1;display:flex;flex-direction:column;align-items:center;gap:var(--space-2);color:var(--color-action-primary);animation:fx-slam 1.2s cubic-bezier(.2,.9,.25,1) forwards}
 #fxSeal svg{display:block;filter:drop-shadow(0 4px 10px rgb(139 11 94/.22));transform:rotate(-8deg)}
 .fx-seal p{font:var(--weight-regular) 18px var(--font-display);color:var(--color-text-brand);background:var(--color-surface-raised);border-radius:var(--radius-pill);padding:4px 14px;box-shadow:var(--shadow-1);white-space:nowrap}
 @keyframes fx-slam{0%{transform:scale(1.8);opacity:0}20%{transform:scale(.95);opacity:1}30%{transform:scale(1)}80%{opacity:1}100%{opacity:0}}
@@ -270,3 +270,11 @@ dialog{overflow:hidden}
 /* 완료된 스탬프 칸: 장소 도장 그림 */
 .stop.done .stamp.art{border:none;background:none;width:52px;height:52px;color:var(--color-action-primary)}
 .stop.done .stamp.art svg{transform:rotate(-8deg)}
+
+/* 꽃잎 흩날림 */
+.fx-petals{grid-area:1/1;width:1px;height:1px;position:relative;margin-bottom:40px}
+.fx-petals i{position:absolute;left:-6px;top:-9px;width:12px;height:18px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:var(--color-action-secondary);opacity:0;animation:fx-petal 1.3s cubic-bezier(.2,.7,.3,1) forwards}
+.fx-petals i:nth-child(3n+1){background:var(--color-accent-blush)}
+.fx-petals i:nth-child(3n+2){width:9px;height:14px;background:var(--color-action-primary)}
+@keyframes fx-petal{0%{opacity:0;transform:translate(0,0) rotate(0) scale(.6)}15%{opacity:.95}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(1)}}
+@media(prefers-reduced-motion:reduce){.fx-petals{display:none}}
