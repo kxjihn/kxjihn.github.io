@@ -106,6 +106,11 @@ const nextIndex = () => STOPS.findIndex(s => !stamped[s.id]);
 /* ---------- 탭 이동 (#home #map #stamps #finish) ---------- */
 const VIEWS = ['home', 'intro', 'map', 'stamps', 'finish'];
 const show = () => {
+  if (!location.hash) {
+    let seen = false;
+    try { seen = localStorage.getItem('footsteps-intro') === '1'; } catch (e) {}
+    if (!seen) { history.replaceState(null, '', '#intro'); }
+  }
   let v = (location.hash || '#home').slice(1);
   if (!VIEWS.includes(v)) v = 'home';
   document.querySelectorAll('.view').forEach(el => { el.hidden = el.dataset.view !== v; });
@@ -364,14 +369,14 @@ const dots = [...$('dots').children];
 function setSlide(i) {
   slideIdx = i;
   dots.forEach((d, k) => d.setAttribute('aria-selected', k === i));
-  $('introNext').textContent = i === slides.length - 1 ? '코스 시작하기' : '다음';
+  $('introNext').textContent = i === slides.length - 1 ? '시작하기' : '다음';
 }
 const goSlide = i => track.scrollTo({left: Math.max(0, Math.min(slides.length - 1, i)) * track.clientWidth, behavior: 'smooth'});
 track.addEventListener('scroll', () => { const i = Math.round(track.scrollLeft / track.clientWidth); if (i !== slideIdx) setSlide(i); }, {passive: true});
 dots.forEach((d, i) => d.addEventListener('click', () => goSlide(i)));
 const finishIntro = () => { try { localStorage.setItem('footsteps-intro', '1'); } catch (e) {} };
 $('introNext').addEventListener('click', () => {
-  if (slideIdx === slides.length - 1) { finishIntro(); location.hash = '#map'; }
+  if (slideIdx === slides.length - 1) { finishIntro(); location.hash = '#home'; }
   else goSlide(slideIdx + 1);
 });
 document.querySelector('[data-intro-done]').addEventListener('click', finishIntro);
