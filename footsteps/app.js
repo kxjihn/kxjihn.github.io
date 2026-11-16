@@ -134,10 +134,10 @@ const renderStamps = () => {
     const cls = ['stop', done ? 'done' : '', i === ni ? 'next' : '', s.id === justStamped ? 'just' : ''].join(' ').trim();
     return `<li class="${cls}">
       <div class="head"><span class="stamp" aria-hidden="true">${done ? '✓' : i + 1}</span>
-      <div><h3>${s.name}</h3><p class="meta">${s.sub}${done ? ' · 스탬프 완료' : (i === ni ? ' · 다음 목적지' : '')}</p></div></div>
+      <div><h3>${s.name}</h3><p class="meta">${s.sub}${done ? ' · 스탬프 완료' : (i === ni ? ' · 지금 갈 곳' : ' · ' + STOPS[i - 1].name + ' 다음')}</p></div></div>
       ${done ? `<p class="body">${s.text}</p>${nx ? `<p class="next-hint">다음: ${nx.name} · 직선 약 ${fmt(dist(s, nx))}</p>` : ''}` : ''}
       <div class="row">
-        ${done ? '' : `<button class="btn sm" type="button" data-id="${s.id}">도착 확인</button>`}
+        ${done ? '' : i === ni ? `<button class="btn sm" type="button" data-id="${s.id}">도착 확인</button>` : `<button class="btn sm locked" type="button" disabled aria-label="${STOPS[ni].name} 스탬프를 먼저 찍어야 열려요"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>잠김</button>`}
         <button class="btn sec sm" type="button" data-open="${s.name}">장소 설명</button>
         <a class="btn sec sm" href="${kakaoTo(s)}" target="_blank" rel="noopener">길찾기</a>
         <span class="msg" id="m-${s.id}" aria-live="polite"></span>
@@ -198,6 +198,7 @@ $('stops').addEventListener('click', e => {
   if (!b) return;
   const s = STOPS.find(x => x.id === b.dataset.id);
   const msg = $('m-' + s.id);
+  if (STOPS.indexOf(s) !== nextIndex()) { msg.textContent = '앞 지점의 스탬프를 먼저 찍어 주세요.'; return; }
   if ($('demo').checked) { stamp(s); return; }
   if (!('geolocation' in navigator)) { msg.textContent = '이 기기에서는 위치 확인을 쓸 수 없어요.'; return; }
   b.disabled = true;

@@ -242,3 +242,7 @@ dialog::backdrop{background:rgba(46,31,34,.45)}
 .glass-rim{position:absolute;inset:0;border-radius:inherit;opacity:0;transition:opacity 160ms;-webkit-backdrop-filter:blur(2.5px);backdrop-filter:blur(2.5px);
   -webkit-mask-image:linear-gradient(90deg,#000 0,transparent 24%,transparent 76%,#000 100%);mask-image:linear-gradient(90deg,#000 0,transparent 24%,transparent 76%,#000 100%)}
 .glass-thumb.press .glass-rim{opacity:1}
+
+/* 순서 잠금 */
+.btn.locked{background:var(--color-surface-tint);border-color:var(--color-border-strong);color:var(--color-text-muted);opacity:1;cursor:not-allowed}
+.stop:not(.done):not(.next){opacity:.78}
