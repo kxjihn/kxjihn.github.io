@@ -214,23 +214,22 @@ const STAMP_ART = {
 };
 const stampSvg = (id, size, label) => `<svg viewBox="0 0 120 120" width="${size}" height="${size}" aria-hidden="true"><circle cx="60" cy="60" r="55" fill="#fff8fa" stroke="currentColor" stroke-width="5"/><circle cx="60" cy="60" r="47" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 4"/><g transform="translate(0 ${label ? -4 : 2}) scale(1)" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">${STAMP_ART[id]}</g>${label ? `<text x="60" y="103" text-anchor="middle" font-size="13" font-family="Do Hyeon,sans-serif" fill="currentColor">${label}</text>` : ''}</svg>`;
 
-/* 스탬프 획득 효과: 도장이 한 번 찍히고 사라진다 */
+/* 스탬프 획득 효과: 장소 도장 + 잉크 원 + 무궁화 꽃잎 + 마스코트 안내 */
 let fxTimer = 0;
 const stampFx = s => {
-  const fx = $('stampFx');
-  $('fxSeal').innerHTML = stampSvg(s.id, 132, doneCount() + ' / ' + STOPS.length);
+  const fx = $('stampFx'), n = doneCount(), i = STOPS.indexOf(s);
+  $('fxSeal').innerHTML = stampSvg(s.id, 170, n + ' / ' + STOPS.length);
   $('fxTitle').textContent = s.name + ' 스탬프 획득';
-  const ni2 = STOPS.indexOf(s) + 1;
-  $('fxSub').textContent = ni2 < STOPS.length ? '다음은 ' + STOPS[ni2].name : '모든 스탬프를 모았어요';
-  const many = doneCount() === STOPS.length ? 22 : 16;
+  $('fxSub').textContent = n === STOPS.length ? '4곳 모두 모았어요. 완주했어요!' : '다음은 ' + STOPS[i + 1].name + '이에요';
+  const many = n === STOPS.length ? 18 : 12;
   $('fxPetals').innerHTML = Array.from({length: many}, (_, k) => {
-    const a = (k / many) * Math.PI * 2 + Math.random() * .6, d = 80 + Math.random() * 80;
-    return `<i style="--dx:${Math.round(Math.cos(a) * d)}px;--dy:${Math.round(Math.sin(a) * d + 50)}px;--rot:${Math.round(Math.random() * 360 - 180)}deg;animation-delay:${(.18 + Math.random() * .12).toFixed(2)}s"></i>`;
+    const a = (k / many) * Math.PI * 2 + Math.random() * .5, d = 100 + Math.random() * 80;
+    return `<i style="--dx:${Math.round(Math.cos(a) * d)}px;--dy:${Math.round(Math.sin(a) * d + 50)}px;--rot:${Math.round(Math.random() * 360 - 180)}deg;animation-delay:${(.2 + Math.random() * .14).toFixed(2)}s"></i>`;
   }).join('');
   fx.hidden = true; void fx.offsetWidth; fx.hidden = false;
   clearTimeout(fxTimer);
-  fxTimer = setTimeout(() => { fx.hidden = true; }, 2000);
-  if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) {} }
+  fxTimer = setTimeout(() => { fx.hidden = true; }, 2050);
+  if (navigator.vibrate) { try { navigator.vibrate([18, 40, 30]); } catch (e) {} }
 };
 
 $('stops').addEventListener('click', e => {
