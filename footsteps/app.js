@@ -115,6 +115,9 @@ const kakaoTo = p => 'https://map.kakao.com/link/to/' + encodeURIComponent(p.nam
 const doneCount = () => STOPS.filter(s => stamped[s.id]).length;
 const nextIndex = () => STOPS.findIndex(s => !stamped[s.id]);
 
+const START_KEY = 'footsteps-started';
+const isStarted = () => { try { return localStorage.getItem(START_KEY) === '1'; } catch (e) { return false; } };
+const markStarted = () => { try { localStorage.setItem(START_KEY, '1'); } catch (e) {} };
 /* ---------- 탭 이동 (#home #map #stamps #finish) ---------- */
 const VIEWS = ['home', 'intro', 'map', 'stamps', 'finish'];
 const show = () => {
@@ -129,7 +132,9 @@ const show = () => {
   document.querySelectorAll('.glass-bar a').forEach(a => {
     if (a.dataset.tab === v) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
-  document.body.classList.toggle('no-nav', v === 'intro');
+  /* 하단 메뉴는 '코스 시작'을 누른 뒤부터 보인다 (지도·스탬프 화면으로 바로 들어온 경우도 시작한 것으로 본다) */
+  if (v !== 'home' && v !== 'intro') markStarted();
+  document.body.classList.toggle('no-nav', v === 'intro' || !isStarted());
   moveThumb(TABS.indexOf(v));
   window.scrollTo(0, 0);
   if (v === 'intro') { $('track').scrollLeft = 0; setSlide(0); }
@@ -255,6 +260,7 @@ $('stops').addEventListener('click', e => {
 });
 $('demo').addEventListener('change', () => document.body.classList.toggle('demo', $('demo').checked));
 $('reset').addEventListener('click', () => { stamped = {}; save(); render(); });
+document.querySelector('.hero-cta a').addEventListener('click', markStarted);
 
 /* ---------- 금색 완주 배지 ---------- */
 const badgeDlg = $('badgeDlg');
