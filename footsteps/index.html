@@ -12,9 +12,9 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preload" href="fonts/Pretendard-Regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="mascot.webp" as="image" type="image/webp">
-<link rel="stylesheet" href="dohyeon.css?v=20261122l">
-<link rel="stylesheet" href="tokens.css?v=20261122l">
-<link rel="stylesheet" href="styles.css?v=20261122l">
+<link rel="stylesheet" href="dohyeon.css?v=20261123a">
+<link rel="stylesheet" href="tokens.css?v=20261123a">
+<link rel="stylesheet" href="styles.css?v=20261123a">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="그들의 발자취를 따라서">
@@ -53,15 +53,36 @@
 <div class="hero-cta">
 <a class="btn" href="#map">코스 시작</a>
 </div>
-<figure class="hero-fig"><img src="mascot.webp" alt="무궁화 꽃을 단 하얀 토끼 마스코트" width="368" height="440" fetchpriority="high"></figure>
-<ol class="nodes" aria-label="코스 순서">
-<li><i></i><span>현충원</span></li>
-<li><i></i><span>현충원역</span></li>
-<li><i></i><span>1호선</span></li>
-<li><i></i><span>원도심<br>스탬프 4곳</span></li>
-<li><i></i><span>대전역</span></li>
-</ol>
-<div class="trail" aria-hidden="true"><span class="trail-fill"></span><span class="trail-dot"></span></div>
+<section class="holo" id="holo" aria-roledescription="carousel" aria-label="코스 네 장소 미리 보기" tabindex="0">
+<div class="holo-stage">
+<figure class="holo-scene is-on calm" id="hs1" aria-roledescription="slide" aria-label="01 / 04 국립대전현충원">
+<div class="holo-art photo"><img src="photos/hyeonchung-gate.webp" alt="국립대전현충원 현충문" width="792" height="442" fetchpriority="high"></div>
+<figcaption><span class="holo-no">01 / 04</span><b>국립대전현충원</b><small>현충문 · 사진: 건의함에 한 건의 건의한 건희 (직접 촬영)</small></figcaption>
+</figure>
+<figure class="holo-scene" id="hs2" aria-roledescription="slide" aria-label="02 / 04 대전근현대사전시관" aria-hidden="true">
+<div class="holo-art photo"><img src="https://tong.visitkorea.or.kr/cms/resource/18/3512218_image2_1.jpg" alt="대전근현대사전시관(옛 충남도청) 정면" width="940" height="626" loading="lazy"></div>
+<figcaption><span class="holo-no">02 / 04</span><b>대전근현대사전시관</b><small>옛 충남도청 · 사진: ⓒ한국관광공사 (공공누리 제1유형)</small></figcaption>
+</figure>
+<figure class="holo-scene" id="hs3" aria-roledescription="slide" aria-label="03 / 04 옛 대전형무소 망루와 우물" aria-hidden="true">
+<div class="holo-art line"><svg viewBox="0 0 320 200" role="img" aria-label="망루와 우물을 단순한 윤곽선으로 나타낸 그림"><g fill="none" stroke-linecap="round" stroke-linejoin="round"><path class="ln" d="M40 176h240"/><path class="ln" d="M110 176V70M150 176V70M104 70h52M110 70l20-16 20 16M118 96h24M118 124h24"/><path class="ln" d="M190 176v-22a28 9 0 0 0 56 0v22M190 154a28 9 0 0 1 56 0"/></g></svg></div>
+<figcaption><span class="holo-no">03 / 04</span><b>옛 대전형무소 망루와 우물</b><small>확인된 사진이 없어 실제 모습 대신 단순한 윤곽선으로 나타냈어요</small></figcaption>
+</figure>
+<figure class="holo-scene" id="hs4" aria-roledescription="slide" aria-label="04 / 04 대전역" aria-hidden="true">
+<div class="holo-art photo"><img src="https://tong.visitkorea.or.kr/cms/resource/72/3526672_image2_1.jpg" alt="대전역 동광장 쪽 출입구" width="940" height="626" loading="lazy"></div>
+<figcaption><span class="holo-no">04 / 04</span><b>대전역</b><small>동광장 쪽 출입구 · 사진: ⓒ한국관광공사 (공공누리 제1유형)</small></figcaption>
+</figure>
+<span class="holo-floor" aria-hidden="true"></span>
+<span class="holo-scan" aria-hidden="true"></span>
+<span class="holo-dust" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+</div>
+<div class="holo-nav">
+<button type="button" class="holo-arrow" id="holoPrev" aria-label="이전 장소">‹</button>
+<div class="holo-dots" role="group" aria-label="장소 고르기">
+<button type="button" aria-label="01 국립대전현충원" aria-current="true"></button><button type="button" aria-label="02 대전근현대사전시관"></button><button type="button" aria-label="03 옛 대전형무소 망루와 우물"></button><button type="button" aria-label="04 대전역"></button>
+</div>
+<button type="button" class="holo-arrow" id="holoNext" aria-label="다음 장소">›</button>
+</div>
+</section>
 </div>
 <div class="bubble"><p>참배를 마치셨나요? 저와 함께 <b>원도심 4곳의 스탬프</b>를 모으며 선조의 발자취를 따라 걸어 봐요. 현충원은 추모 공간이라 스탬프를 두지 않았어요.</p></div>
 <div class="privacy"><p><b>위치 정보 안내</b> · 위치는 <b>‘도착 확인’ 버튼을 누를 때만 한 번</b> 확인하고, 스탬프 지점과의 거리 계산에만 씁니다. 좌표는 어디에도 보내거나 저장하지 않으며, 이 휴대폰에는 스탬프를 찍었는지 여부만 남습니다.</p></div>
@@ -253,6 +274,6 @@
 <div id="sr-live" class="sr-only" role="status" aria-live="assertive"></div>
 <noscript><div style="padding:24px;max-width:36rem;margin:0 auto"><h1>그들의 발자취를 따라서</h1><p>국립대전현충원 → 현충원역 → 1호선 → 중앙로역 → 대전근현대사전시관 → 옛 대전형무소 망루·우물 → 대전역으로 이어지는 도보 스탬프 코스입니다. 스탬프 기능을 쓰려면 JavaScript를 켜 주세요.</p></div></noscript>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" defer></script>
-<script src="app.js?v=20261122l" defer></script>
+<script src="app.js?v=20261123a" defer></script>
 </body>
 </html>
