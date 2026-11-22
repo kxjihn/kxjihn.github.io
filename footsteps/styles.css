@@ -222,7 +222,7 @@ dialog::backdrop{background:rgba(46,31,34,.45)}
   dialog{width:100%;max-width:none;margin:auto 0 0;border-radius:var(--radius-lg) var(--radius-lg) 0 0}
   .info{grid-template-columns:1fr;gap:2px}.info dd{margin-bottom:var(--space-2)}
 }
-@media(prefers-reduced-motion:reduce){*:not(.stamp-fx):not(.stamp-fx *){animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media(prefers-reduced-motion:reduce){*:not(.stamp-fx):not(.stamp-fx *):not(.walker *):not(.hero-fig img){animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 /* 왜곡이 켜지면 유리를 더 투명하게 해서 휘어진 뒤 화면이 잘 보이게 */
 .glass-bar.lens{background:linear-gradient(135deg,rgb(255 255 255/.32),rgb(255 240 243/.08) 55%,rgb(255 255 255/.18))}
@@ -343,3 +343,15 @@ html.big .glass-bar a{font-size:16px}
 .cf-acts{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-top:var(--space-5)}
 .btn.danger{background:#b3261e;border-color:#b3261e;color:#fff}
 .btn.danger:hover{background:#8c1d18;border-color:#8c1d18}
+
+/* 홈 코스 선 위를 마스코트가 계속 걸어간다 (장식, 클릭 안 됨) */
+.walker{grid-area:nodes;position:relative;height:0;pointer-events:none;align-self:start;z-index:1}
+.walker-go{position:absolute;top:-30px;left:10%;width:34px;transform:translateX(-50%);animation:walk-path 12s linear infinite}
+.walker-go img{display:block;width:100%;height:auto;transform-origin:50% 100%;animation:walk-step .5s ease-in-out infinite alternate;filter:drop-shadow(0 2px 2px rgba(84,48,52,.18))}
+@keyframes walk-path{
+0%{left:10%;opacity:0}4%{opacity:1}
+16%,22%{left:30%}36%,42%{left:50%}56%,62%{left:70%}
+80%{left:90%;opacity:1}88%,100%{left:90%;opacity:0}}
+@keyframes walk-step{from{transform:translateY(0) rotate(-6deg)}to{transform:translateY(-4px) rotate(6deg)}}
+.hero-fig img{animation:hero-bob 3.2s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes hero-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
