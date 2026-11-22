@@ -3,8 +3,8 @@
 /* 카카오 지도 JavaScript 키 (developers.kakao.com > 플랫폼 > Web에 https://kxjihn.github.io 등록) */
 const KAKAO_JS_KEY = '4975632e97217d146aeb2ded4cf61634';
 /* 카카오 로그인 (Supabase Auth). 둘 다 비워 두면 '로그인 준비 중'으로 표시되고 로그인 없이 쓰는 방식만 열린다 */
-const SUPABASE_URL = '';
-const SUPABASE_KEY = '';   /* publishable(anon) 키. 서비스 키는 절대 넣지 말 것 */
+const SUPABASE_URL = 'https://jmjljaxhuyourwnzvqvb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_-y7UIgFQUzoi237pCVdIGA_ANB-P8I8';   /* publishable(anon) 키. 서비스 키는 절대 넣지 말 것 */
 /* 인증 반경(m) */
 const RADIUS = 50;
 /* 좌표: lat=위도, lng=경도. ※ 표시된 곳은 지도에서 꼭 확인 */
