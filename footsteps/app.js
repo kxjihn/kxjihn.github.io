@@ -676,57 +676,17 @@ const setBig = on => { document.documentElement.classList.toggle('big', on); $('
 $('bigBtn').addEventListener('click', () => setBig(!document.documentElement.classList.contains('big')));
 try { setBig(localStorage.getItem(BIG_KEY) === '1'); } catch (e) {}
 
-/* ---------- 첫 화면 홀로그램 장면: 네 장소를 차례로 보여 준다 ---------- */
+/* ---------- 첫 화면 3D 홀로그램: 켜질 때만 불러온다 ---------- */
 (() => {
   const root = $('holo');
   if (!root) return;
-  const scenes = [...root.querySelectorAll('.holo-scene')];
-  const dots = [...root.querySelectorAll('.holo-dots button')];
-  const DWELL = [7500, 6000, 6000, 6000]; /* 현충원은 조금 더 오래, 차분하게 머문다 */
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let cur = 0, timer = 0, hold = false;
-  const show = i => {
-    cur = (i + scenes.length) % scenes.length;
-    scenes.forEach((s, k) => { s.classList.toggle('is-on', k === cur); s.setAttribute('aria-hidden', k === cur ? 'false' : 'true'); });
-    dots.forEach((d, k) => d.setAttribute('aria-current', k === cur ? 'true' : 'false'));
-    root.classList.toggle('calm', scenes[cur].classList.contains('calm'));
-    const img = scenes[(cur + 1) % scenes.length].querySelector('img'); /* 다음 장면 사진을 미리 받아 둔다 */
-    if (img && img.loading === 'lazy') img.loading = 'eager';
+  const load = () => {
+    if (root.dataset.loaded) return;
+    root.dataset.loaded = '1';
+    import('./holo3d.js?v=20261123g').then(m => m.start(root)).then(r => { if (!r || !r.ok) root.hidden = true; }).catch(() => { root.hidden = true; });
   };
-  const visible = () => !document.hidden && !root.closest('.view').hidden;
-  const plan = () => {
-    clearTimeout(timer);
-    if (hold) return; /* 움직임 줄이기 설정이어도 장면은 넘어가되, 선 그리기 같은 움직임은 CSS에서 끈다 */
-    timer = setTimeout(() => { if (visible()) show(cur + 1); plan(); }, DWELL[cur]);
-  };
-  const go = i => { show(i); plan(); };
-  dots.forEach((d, k) => d.addEventListener('click', () => go(k)));
-  $('holoPrev').addEventListener('click', () => go(cur - 1));
-  $('holoNext').addEventListener('click', () => go(cur + 1));
-  /* 마우스를 올리거나 키보드 포커스가 있으면 멈춘다 */
-  root.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') { hold = true; plan(); } });
-  root.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') { hold = !!root.querySelector(':focus-visible') || root.matches(':focus-visible'); plan(); } });
-  root.addEventListener('focusin', () => { hold = !!root.querySelector(':focus-visible') || root.matches(':focus-visible'); plan(); }); /* 키보드로 들어왔을 때만 멈춘다. 손가락·마우스로 누른 뒤에는 계속 넘어간다 */
-  root.addEventListener('focusout', e => { if (!root.contains(e.relatedTarget)) { hold = root.matches(':hover') && matchMedia('(hover: hover)').matches; plan(); } });
-  root.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight') { e.preventDefault(); go(cur + 1); }
-    if (e.key === 'ArrowLeft') { e.preventDefault(); go(cur - 1); }
-  });
-  /* 모바일: 좌우로 밀어서 넘기기 */
-  let sx = null, sy = 0;
-  const stage = root.querySelector('.holo-stage');
-  stage.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, {passive: true});
-  stage.addEventListener('touchend', e => {
-    if (sx === null) return;
-    const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
-    sx = null;
-    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) go(cur + (dx < 0 ? 1 : -1));
-  }, {passive: true});
-  /* 사진을 못 불러오면 빈 무대 대신 이름만 남긴다 */
-  root.querySelectorAll('.holo-art img').forEach(im => im.addEventListener('error', () => { im.parentNode.hidden = true; }));
-  reduce.addEventListener('change', plan);
-  document.addEventListener('visibilitychange', plan);
-  show(0); plan();
+  const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); load(); } });
+  io.observe(root);
 })();
 
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
