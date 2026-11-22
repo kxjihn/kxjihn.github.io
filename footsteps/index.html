@@ -12,9 +12,9 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preload" href="fonts/Pretendard-Regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="mascot.webp" as="image" type="image/webp">
-<link rel="stylesheet" href="dohyeon.css?v=20261122a">
-<link rel="stylesheet" href="tokens.css?v=20261122a">
-<link rel="stylesheet" href="styles.css?v=20261122a">
+<link rel="stylesheet" href="dohyeon.css?v=20261122b">
+<link rel="stylesheet" href="tokens.css?v=20261122b">
+<link rel="stylesheet" href="styles.css?v=20261122b">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="그들의 발자취를 따라서">
@@ -108,14 +108,16 @@
 <p class="frame-chip">월요일 휴관 · 무료</p>
 </div></div>
 </article>
-<article class="slide" aria-label="5 / 5">
-<p class="tag">4 · 위치 정보</p><div class="rule"></div>
-<h2>위치는 확인할 때<br>한 번만 써요</h2>
-<p class="s-body">좌표는 어디에도 보내거나 저장하지 않아요. 휴대폰에는 스탬프를 찍었는지만 남아요. 발표 때는 ‘시연 모드’를 쓸 수 있어요.</p>
-<div class="art"><div class="frame center">
-<svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9V6z"/><path d="M12 8.5a2.5 2.5 0 0 1 2.5 2.5c0 2-2.5 4.5-2.5 4.5S9.5 13 9.5 11A2.5 2.5 0 0 1 12 8.5z"/></svg>
-<p class="frame-note">‘도착 확인’을 누를 때만 확인</p>
-</div></div>
+<article class="slide choose" aria-label="시작 방법 고르기">
+<p class="tag">시작하기</p><div class="rule"></div>
+<h2>어떻게 시작할까요?</h2>
+<p class="s-body">로그인하면 휴대폰을 바꾸거나 기록을 지워도 스탬프가 남아요. 로그인 없이도 모든 기능을 쓸 수 있어요.</p>
+<div class="choose-btns">
+<button class="btn kakao block" type="button" id="kakaoLogin"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3C6.5 3 2 6.5 2 10.8c0 2.8 1.9 5.2 4.7 6.6l-1 3.6c-.1.3.3.6.6.4l4.2-2.8c.5.1 1 .1 1.5.1 5.5 0 10-3.5 10-7.9S17.5 3 12 3z"/></svg>카카오로 로그인하고 시작</button>
+<button class="btn sec block" type="button" id="guestStart">로그인 없이 시작</button>
+</div>
+<p class="msg" id="loginMsg" aria-live="polite"></p>
+<p class="choose-note">로그인하면 카카오 닉네임과 지점별 스탬프 여부만 저장해요. 위치(좌표)는 로그인 여부와 상관없이 ‘도착 확인’을 누를 때 한 번만 쓰고 어디에도 저장하지 않아요.</p>
 </article>
 </div>
 <div class="intro-foot">
@@ -149,6 +151,7 @@
 <!-- 스탬프 -->
 <section class="view" id="v-stamps" data-view="stamps" aria-labelledby="h-stamps" hidden>
 <h2 id="h-stamps" class="display">스탬프</h2>
+<div class="acct" id="acct"></div>
 <div class="prog"><span>모은 스탬프 <span class="demo-tag">· 시연 모드</span></span><b id="count">0 / 4</b></div>
 <div class="bar" role="progressbar" aria-label="스탬프 진행" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0" id="barwrap"><i id="bar"></i></div>
 <p class="mode-note"><b>실제 인증</b>은 현장에서 지점 50m 안에 있을 때만 찍혀요. 중앙로역과 대전역은 자료로 좌표를 확인했고, 전시관과 형무소 터는 아직 현장 확인 전이에요.</p>
@@ -198,6 +201,13 @@
 <div class="fx-seal"><div id="fxSeal" aria-hidden="true"></div></div>
 <div class="fx-card"><img src="mascot-sm.webp" alt="" width="45" height="48"><div><b id="fxTitle">스탬프 획득</b><span id="fxSub"></span></div></div>
 </div>
+<dialog id="resetDlg" class="confirm-dlg" aria-labelledby="rsTitle">
+<div class="cf-in">
+<h2 id="rsTitle" class="display">스탬프를 처음부터 다시 할까요?</h2>
+<p>모은 스탬프와 완주 배지가 모두 지워지고 되돌릴 수 없어요.<span id="rsAcct"></span></p>
+<div class="cf-acts"><button class="btn sec" type="button" id="rsNo">취소</button><button class="btn danger" type="button" id="rsYes">모두 지우기</button></div>
+</div>
+</dialog>
 <dialog id="badgeDlg" class="badge-dlg" aria-labelledby="bmTitle">
 <div class="bm-in">
 <div class="bm-medal" aria-hidden="true">
@@ -240,6 +250,7 @@
 
 <div id="sr-live" class="sr-only" role="status" aria-live="assertive"></div>
 <noscript><div style="padding:24px;max-width:36rem;margin:0 auto"><h1>그들의 발자취를 따라서</h1><p>국립대전현충원 → 현충원역 → 1호선 → 중앙로역 → 대전근현대사전시관 → 옛 대전형무소 망루·우물 → 대전역으로 이어지는 도보 스탬프 코스입니다. 스탬프 기능을 쓰려면 JavaScript를 켜 주세요.</p></div></noscript>
-<script src="app.js?v=20261122a" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" defer></script>
+<script src="app.js?v=20261122b" defer></script>
 </body>
 </html>

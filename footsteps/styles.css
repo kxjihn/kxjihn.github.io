@@ -327,3 +327,19 @@ html.big .meta,html.big .sub,html.big .msg,html.big .st-note,html.big .st-how,ht
 html.big .stop h3{font-size:26px}
 html.big .glass-bar a{font-size:16px}
 .meta,.sub{color:var(--color-text-secondary)}
+
+/* 시작 방법 고르기, 계정 표시, 초기화 확인 */
+.choose-btns{display:grid;gap:var(--space-3);margin-top:var(--space-6)}
+.btn.kakao{background:#fee500;border-color:#fee500;color:#191600;font-family:var(--font-body);font-weight:700;font-size:17px}
+.btn.kakao:hover{background:#f5dc00;border-color:#f5dc00}
+.choose-note{margin-top:var(--space-4);font-size:var(--size-sm);color:var(--color-text-secondary);background:var(--color-surface-tint);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4)}
+.acct{display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-3);align-items:center;justify-content:space-between;font-size:var(--size-sm);color:var(--color-text-secondary);background:var(--color-surface-tint);border-radius:var(--radius-md);padding:var(--space-2) var(--space-4)}
+.link-btn{background:none;border:none;color:var(--color-text-brand);font:700 var(--size-sm) var(--font-body);text-decoration:underline;text-underline-offset:3px;min-height:40px;cursor:pointer}
+.confirm-dlg{width:min(380px,calc(100% - 32px));border:none;border-radius:var(--radius-lg);padding:0;background:var(--color-surface-raised);color:var(--color-text-primary);margin:auto}
+.confirm-dlg::backdrop{background:rgb(46 31 34/.5)}
+.cf-in{padding:var(--space-5)}
+.cf-in h2{font-size:24px}
+.cf-in p{margin-top:var(--space-3);color:var(--color-text-secondary)}
+.cf-acts{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-top:var(--space-5)}
+.btn.danger{background:#b3261e;border-color:#b3261e;color:#fff}
+.btn.danger:hover{background:#8c1d18;border-color:#8c1d18}

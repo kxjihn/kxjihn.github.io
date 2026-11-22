@@ -2,6 +2,9 @@
 /* ===== 설정: 여기만 고치면 됩니다 ===== */
 /* 카카오 지도 JavaScript 키 (developers.kakao.com > 플랫폼 > Web에 https://kxjihn.github.io 등록) */
 const KAKAO_JS_KEY = '4975632e97217d146aeb2ded4cf61634';
+/* 카카오 로그인 (Supabase Auth). 둘 다 비워 두면 '로그인 준비 중'으로 표시되고 로그인 없이 쓰는 방식만 열린다 */
+const SUPABASE_URL = '';
+const SUPABASE_KEY = '';   /* publishable(anon) 키. 서비스 키는 절대 넣지 말 것 */
 /* 인증 반경(m) */
 const RADIUS = 50;
 /* 좌표: lat=위도, lng=경도. ※ 표시된 곳은 지도에서 꼭 확인 */
@@ -208,6 +211,7 @@ const stamp = s => {
   }
   justStamped = s.id;
   save();
+  pushRemote();
   render();
   stampFx(s);
   if (doneCount() === STOPS.length) setTimeout(openBadge, 2050);
@@ -272,8 +276,66 @@ $('stops').addEventListener('click', e => {
   }, {enableHighAccuracy: true, timeout: 12000, maximumAge: 0});
 });
 $('demo').addEventListener('change', () => document.body.classList.toggle('demo', $('demo').checked));
-$('reset').addEventListener('click', () => { stamped = {}; save(); render(); });
+const resetDlg = $('resetDlg');
+$('reset').addEventListener('click', () => {
+  $('rsAcct').textContent = user ? ' 로그인한 계정에 저장된 기록도 함께 지워져요.' : '';
+  if (typeof resetDlg.showModal === 'function') resetDlg.showModal(); else resetDlg.setAttribute('open', '');
+});
+$('rsNo').addEventListener('click', () => resetDlg.close());
+$('rsYes').addEventListener('click', () => { resetDlg.close(); stamped = {}; save(); pushRemote(); render(); announce('스탬프를 모두 지웠어요.'); });
 document.querySelector('.hero-cta a').addEventListener('click', markStarted);
+
+/* ---------- 카카오 로그인과 스탬프 동기화 ---------- */
+let sb = null, user = null;
+const authReady = () => !!(SUPABASE_URL && SUPABASE_KEY && window.supabase);
+function initAuth() {
+  if (!authReady()) { renderAcct(); return; }
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  sb.auth.getSession().then(({data}) => setUser(data.session ? data.session.user : null));
+  sb.auth.onAuthStateChange((_e, session) => setUser(session ? session.user : null));
+}
+async function setUser(u) {
+  const was = user && user.id;
+  user = u;
+  renderAcct();
+  if (!u || was === u.id) return;
+  markStarted(); finishIntro();
+  /* 서버 기록과 이 휴대폰 기록을 합친다 (찍은 스탬프는 지우지 않음) */
+  const {data} = await sb.from('footsteps_progress').select('stamps, done_at').eq('user_id', u.id).maybeSingle();
+  if (data) {
+    Object.assign(stamped, data.stamps || {});
+    if (data.done_at && !stamped.doneAt) stamped.doneAt = data.done_at;
+  }
+  save(); render(); pushRemote();
+}
+let pushTimer = 0;
+function pushRemote() {
+  if (!sb || !user) return;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(async () => {
+    const stamps = {}; STOPS.forEach(s => { if (stamped[s.id]) stamps[s.id] = true; });
+    await sb.from('footsteps_progress').upsert({user_id: user.id, stamps, done_at: stamped.doneAt || null, updated_at: new Date().toISOString()});
+  }, 300);
+}
+async function kakaoLogin() {
+  if (!authReady()) { $('loginMsg').textContent = '카카오 로그인은 준비 중이에요. 지금은 로그인 없이 시작해 주세요. 스탬프는 이 휴대폰에 저장돼요.'; return; }
+  const {error} = await sb.auth.signInWithOAuth({provider: 'kakao', options: {redirectTo: PAGE_URL + '#stamps', scopes: 'profile_nickname'}});
+  if (error) $('loginMsg').textContent = '로그인을 시작하지 못했어요. 잠시 뒤 다시 시도하거나 로그인 없이 시작해 주세요.';
+}
+function renderAcct() {
+  const el = $('acct');
+  if (!el) return;
+  if (user) {
+    const nick = (user.user_metadata && (user.user_metadata.name || user.user_metadata.full_name || user.user_metadata.nickname)) || '카카오 계정';
+    el.innerHTML = `<span>${nick.replace(/[<>&]/g, '')}님 · 스탬프가 계정에 저장돼요</span><button class="link-btn" type="button" id="logoutBtn">로그아웃</button>`;
+    $('logoutBtn').onclick = async () => { await sb.auth.signOut(); user = null; renderAcct(); announce('로그아웃했어요. 이 휴대폰의 스탬프는 그대로 있어요.'); };
+  } else {
+    el.innerHTML = `<span>로그인 없이 사용 중 · 스탬프는 이 휴대폰에만 저장돼요</span><button class="link-btn" type="button" id="loginBtn2">카카오 로그인</button>`;
+    $('loginBtn2').onclick = () => { if (authReady()) kakaoLogin(); else announce('카카오 로그인은 준비 중이에요.'); };
+  }
+}
+$('kakaoLogin').addEventListener('click', kakaoLogin);
+$('guestStart').addEventListener('click', () => { finishIntro(); location.hash = '#home'; });
 
 /* 화면 읽기 도구용 알림 */
 const announce = t => { const el = $('sr-live'); el.textContent = ''; setTimeout(() => { el.textContent = t; }, 60); };
@@ -465,7 +527,7 @@ const dots = [...$('dots').children];
 function setSlide(i) {
   slideIdx = i;
   dots.forEach((d, k) => d.setAttribute('aria-selected', k === i));
-  $('introNext').textContent = i === slides.length - 1 ? '시작하기' : '다음';
+  $('introNext').hidden = i === slides.length - 1;
 }
 const goSlide = i => track.scrollTo({left: Math.max(0, Math.min(slides.length - 1, i)) * track.clientWidth, behavior: 'smooth'});
 track.addEventListener('scroll', () => { const i = Math.round(track.scrollLeft / track.clientWidth); if (i !== slideIdx) setSlide(i); }, {passive: true});
@@ -587,4 +649,5 @@ try { setBig(localStorage.getItem(BIG_KEY) === '1'); } catch (e) {}
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
 render();
 show();
+initAuth();
 }
