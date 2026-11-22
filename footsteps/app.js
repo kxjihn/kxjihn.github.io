@@ -292,7 +292,11 @@ function initAuth() {
   if (!authReady()) { renderAcct(); return; }
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   sb.auth.getSession().then(({data}) => setUser(data.session ? data.session.user : null));
-  sb.auth.onAuthStateChange((_e, session) => setUser(session ? session.user : null));
+  sb.auth.onAuthStateChange((_e, session) => {
+    setUser(session ? session.user : null);
+    let back = false; try { back = sessionStorage.getItem('fs-login') === '1'; } catch (e) {}
+    if (session && back) { try { sessionStorage.removeItem('fs-login'); } catch (e) {} setTimeout(() => { location.hash = '#stamps'; }, 0); }
+  });
 }
 async function setUser(u) {
   const was = user && user.id;
@@ -319,7 +323,9 @@ function pushRemote() {
 }
 async function kakaoLogin() {
   if (!authReady()) { $('loginMsg').textContent = '카카오 로그인은 준비 중이에요. 지금은 로그인 없이 시작해 주세요. 스탬프는 이 휴대폰에 저장돼요.'; return; }
-  const {error} = await sb.auth.signInWithOAuth({provider: 'kakao', options: {redirectTo: PAGE_URL + '#stamps', scopes: 'profile_nickname'}});
+  /* 돌아오는 주소에 #을 붙이면 토큰(#access_token)과 겹쳐 로그인이 저장되지 않는다. 돌아온 뒤 스탬프 화면으로 보낸다 */
+  try { sessionStorage.setItem('fs-login', '1'); } catch (e) {}
+  const {error} = await sb.auth.signInWithOAuth({provider: 'kakao', options: {redirectTo: PAGE_URL, scopes: 'profile_nickname'}});
   if (error) $('loginMsg').textContent = '로그인을 시작하지 못했어요. 잠시 뒤 다시 시도하거나 로그인 없이 시작해 주세요.';
 }
 function renderAcct() {
