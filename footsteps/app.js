@@ -174,7 +174,7 @@ const renderStamps = () => {
     return `<li class="${cls}">
       <div class="head"><span class="stamp${done ? ' art' : ''}" aria-hidden="true">${done ? stampSvg(s.id, 52) : i + 1}</span>
       <div><h3>${s.name}</h3><p class="meta">${s.coord === 'check' ? '<span class="coord-warn">좌표 현장 확인 전</span> ' : ''}${s.sub}${done ? ' · 스탬프 완료' : (i === ni ? ' · 지금 갈 곳' : ' · ' + STOPS[i - 1].name + ' 다음')}</p></div></div>
-      ${done ? `<p class="body">${s.text}</p>${nx ? `<p class="next-hint">다음: ${nx.name} · 직선 약 ${fmt(dist(s, nx))}</p>` : ''}` : ''}
+      ${done ? `<p class="body">${s.text}</p>${nx ? `<p class="next-hint">다음: ${nx.name} · 걸어서 약 ${fmt(ROUTES.walkM[i])}</p>` : ''}` : ''}
       <div class="row">
         ${done ? '' : i === ni ? `<button class="btn sm" type="button" data-id="${s.id}">도착 확인</button>` : `<button class="btn sm locked" type="button" disabled aria-label="${STOPS[ni].name} 스탬프를 먼저 찍어야 열려요"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>잠김</button>`}
         <button class="btn sec sm" type="button" data-open="${s.name}">장소 설명</button>
@@ -195,7 +195,7 @@ const renderPlaces = () => {
     const done = st && stamped[st.id];
     const next = PLACES[i + 1];
     const dot = st ? `<span class="dot${done ? ' done' : ''}">${done ? '✓' : STOPS.indexOf(st) + 1}</span>` : '<span class="dot start" aria-hidden="true"></span>';
-    const leg = !next ? '' : i === 0 ? '셔틀·버스로 현충원역' : i === 1 ? '1호선으로 ' + next.name : '도보 직선 약 ' + fmt(dist(p, next));
+    const leg = !next ? '' : i === 0 ? '셔틀·버스로 현충원역' : i === 1 ? '1호선으로 ' + next.name : '걸어서 약 ' + fmt(ROUTES.walkM[i - 2]);
     return `<li><button class="place" type="button" data-open="${p.name}">${dot}<span><b>${p.name}</b><small>${DETAILS[p.name].kind}</small>${leg ? `<span class="walk">다음 → ${leg}</span>` : ''}</span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></li>`;
   }).join('');
 };
