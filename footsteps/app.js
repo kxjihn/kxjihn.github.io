@@ -81,13 +81,17 @@ const DETAILS = {
    답사 사진으로 바꾸려면 footsteps/photos/ 폴더에 넣고 src를 'photos/파일이름.jpg', credit을 '사진: 건의함에 한 건의 건의한 건희'로 바꾸면 된다. */
 const commons = name => 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(name) + '?width=900';
 const commonsPage = name => 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(name.replace(/ /g, '_'));
+const KTO = 'https://tong.visitkorea.or.kr/cms/resource/';
 const PHOTOS = {
-  '국립대전현충원': {src: commons('20250816 국립대전현충원 현충탑.jpg'), alt: '국립대전현충원 현충탑', credit: '위키미디어 공용', link: commonsPage('20250816 국립대전현충원 현충탑.jpg')},
+  '국립대전현충원': [
+    {src: 'photos/hyeonchung-gate.webp', alt: '국립대전현충원 현충문', credit: '건의함에 한 건의 건의한 건희 (직접 촬영)'},
+    {src: KTO + '63/3512563_image2_1.jpg', alt: '국립대전현충원 보훈둘레길 입구의 벚꽃', link: 'https://api.visitkorea.or.kr/', credit: '한국관광공사 (공공누리)'}
+  ],
   '현충원역': null,
   '중앙로역': {src: commons('Joongangro jst 2.JPG'), alt: '대전 도시철도 중앙로역', credit: 'Ryuch · 위키미디어 공용 (GFDL)', link: commonsPage('Joongangro jst 2.JPG')},
-  '대전근현대사전시관': {src: commons('구 충남도청 원경.jpg'), alt: '옛 충남도청 본관(대전근현대사전시관) 전경', credit: '위키미디어 공용', link: commonsPage('구 충남도청 원경.jpg')},
+  '대전근현대사전시관': {src: KTO + '18/3512218_image2_1.jpg', alt: '옛 충남도청 본관(대전근현대사전시관) 정면', link: 'https://api.visitkorea.or.kr/', credit: '한국관광공사 (공공누리)'},
   '옛 대전형무소 망루·우물': null,
-  '대전역': {src: commons('Daejeon train station.jpg'), alt: '대전역 역사(2007년 촬영)', credit: 'Yoo Chung · 위키미디어 공용 (2007년 촬영)', link: commonsPage('Daejeon train station.jpg')}
+  '대전역': {src: KTO + '72/3526672_image2_1.jpg', alt: '대전역 동광장 쪽 출입구', link: 'https://api.visitkorea.or.kr/', credit: '한국관광공사 (공공누리)'}
 };
 const SHARE_TEXT_DONE = '국립대전현충원에서 시작한 추모의 발걸음을 원도심 근현대사 현장까지 이어 걸었습니다. 스탬프 4개 완주! #그들의발자취를따라서 #대전 #GeoLab';
 const SHARE_TEXT_INTRO = '현충원에서 1호선을 타고 원도심 근현대사 현장까지, 스탬프 4곳을 모으며 걷는 기억의 길. #그들의발자취를따라서 #대전 #GeoLab';
@@ -381,8 +385,9 @@ const openPlace = name => {
   const ph = PHOTOS[name], fig = $('dPhoto');
   if (ph) {
     fig.hidden = false;
-    fig.innerHTML = `<img src="${ph.src}" alt="${ph.alt}" loading="lazy" decoding="async"><figcaption>사진: <a href="${ph.link}" target="_blank" rel="noopener">${ph.credit}</a></figcaption>`;
-    fig.querySelector('img').addEventListener('error', () => { fig.hidden = true; });
+    const list = Array.isArray(ph) ? ph : [ph];
+    fig.innerHTML = list.map(x => `<div class="ph-item"><img src="${x.src}" alt="${x.alt}" loading="lazy" decoding="async"><figcaption>사진: ${x.link ? `<a href="${x.link}" target="_blank" rel="noopener">${x.credit}</a>` : x.credit}</figcaption></div>`).join('');
+    fig.querySelectorAll('img').forEach(im => im.addEventListener('error', () => { im.parentNode.remove(); if (!fig.querySelector('img')) fig.hidden = true; }));
   } else {
     fig.hidden = false;
     fig.innerHTML = '<div class="ph-empty"><img src="mascot-sm.webp" alt="" width="45" height="48"><span>답사 사진을 준비하고 있어요</span></div>';
