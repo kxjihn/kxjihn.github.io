@@ -683,7 +683,7 @@ try { setBig(localStorage.getItem(BIG_KEY) === '1'); } catch (e) {}
   const load = () => {
     if (root.dataset.loaded) return;
     root.dataset.loaded = '1';
-    import('./holo3d.js?v=20261123h').then(m => m.start(root)).then(r => { if (!r || !r.ok) root.hidden = true; }).catch(() => { root.hidden = true; });
+    import('./holo3d.js?v=20261123i').then(m => m.start(root)).then(r => { if (!r || !r.ok) root.hidden = true; }).catch(() => { root.hidden = true; });
   };
   const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); load(); } });
   io.observe(root);
