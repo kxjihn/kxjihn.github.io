@@ -12,9 +12,9 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preload" href="fonts/Pretendard-Regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="mascot.webp" as="image" type="image/webp">
-<link rel="stylesheet" href="dohyeon.css?v=20261122g">
-<link rel="stylesheet" href="tokens.css?v=20261122g">
-<link rel="stylesheet" href="styles.css?v=20261122g">
+<link rel="stylesheet" href="dohyeon.css?v=20261122h">
+<link rel="stylesheet" href="tokens.css?v=20261122h">
+<link rel="stylesheet" href="styles.css?v=20261122h">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="그들의 발자취를 따라서">
@@ -61,7 +61,7 @@
 <li><i></i><span>원도심<br>스탬프 4곳</span></li>
 <li><i></i><span>대전역</span></li>
 </ol>
-<div class="walker" aria-hidden="true"><span class="walker-go"><img src="mascot-sm.webp" alt="" width="45" height="48"></span></div>
+<div class="trail" aria-hidden="true"><span class="trail-fill"></span><span class="trail-dot"></span></div>
 </div>
 <div class="bubble"><p>참배를 마치셨나요? 저와 함께 <b>원도심 4곳의 스탬프</b>를 모으며 선조의 발자취를 따라 걸어 봐요. 현충원은 추모 공간이라 스탬프를 두지 않았어요.</p></div>
 <div class="privacy"><p><b>위치 정보 안내</b> · 위치는 <b>‘도착 확인’ 버튼을 누를 때만 한 번</b> 확인하고, 스탬프 지점과의 거리 계산에만 씁니다. 좌표는 어디에도 보내거나 저장하지 않으며, 이 휴대폰에는 스탬프를 찍었는지 여부만 남습니다.</p></div>
@@ -141,7 +141,7 @@
 <span><svg width="28" height="8" aria-hidden="true"><line x1="1" y1="4" x2="27" y2="4" style="stroke:var(--route-subway)" stroke-width="6" stroke-linecap="round"/></svg>1호선</span>
 <span><svg width="28" height="8" aria-hidden="true"><line x1="1" y1="4" x2="27" y2="4" style="stroke:var(--route-walk)" stroke-width="3.5" stroke-dasharray="7 5" stroke-linecap="round"/></svg>도보</span>
 </div>
-<p class="map-warn" id="mapnote"><b>지도의 선은 실제 길이 아니에요.</b> 지점 사이를 곧게 이은 표시예요. 실제로 걷는 길은 아래 이동 순서의 ‘이 구간 길찾기’로 확인하세요.</p>
+<p class="map-warn" id="mapnote"><b>지도의 선은 참고용 경로예요.</b> 걷는 길은 오픈스트리트맵 도보 경로, 1호선은 역을 순서대로 이은 선이에요. 출발 전에 아래 이동 순서의 ‘이 구간 길찾기’로 한 번 더 확인하세요. 경로 데이터 © OpenStreetMap 기여자</p>
 <h3 class="list-h">이동 순서</h3>
 <p class="meta">전체 소요 시간은 아직 실측하지 않았어요. 1호선 약 24분만 시간표 기준 추정이고, 도보 거리는 직선 거리예요.</p>
 <ol class="steps" id="steps"></ol>
@@ -155,7 +155,7 @@
 <div class="acct" id="acct"></div>
 <div class="prog"><span>모은 스탬프 <span class="demo-tag">· 시연 모드</span></span><b id="count">0 / 4</b></div>
 <div class="bar" role="progressbar" aria-label="스탬프 진행" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0" id="barwrap"><i id="bar"></i></div>
-<p class="mode-note"><b>실제 인증</b>은 현장에서 지점 50m 안에 있을 때만 찍혀요. 중앙로역과 대전역은 자료로 좌표를 확인했고, 전시관과 형무소 터는 아직 현장 확인 전이에요.</p>
+<p class="mode-note"><b>실제 인증</b>은 현장에서 지점 50m 안에 있을 때만 찍혀요. 네 곳 좌표는 카카오맵 장소 정보로 확인했어요(2026.11.22).</p>
 <label class="switch"><input type="checkbox" id="demo"> 시연 모드 (발표용: 위치 확인 없이 찍히며, 실제 방문 인증이 아니에요)</label>
 <ol class="stops" id="stops"></ol>
 <button class="btn sec sm" id="reset" type="button">스탬프 처음부터</button>
@@ -252,6 +252,6 @@
 <div id="sr-live" class="sr-only" role="status" aria-live="assertive"></div>
 <noscript><div style="padding:24px;max-width:36rem;margin:0 auto"><h1>그들의 발자취를 따라서</h1><p>국립대전현충원 → 현충원역 → 1호선 → 중앙로역 → 대전근현대사전시관 → 옛 대전형무소 망루·우물 → 대전역으로 이어지는 도보 스탬프 코스입니다. 스탬프 기능을 쓰려면 JavaScript를 켜 주세요.</p></div></noscript>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" defer></script>
-<script src="app.js?v=20261122g" defer></script>
+<script src="app.js?v=20261122h" defer></script>
 </body>
 </html>

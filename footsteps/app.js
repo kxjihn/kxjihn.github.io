@@ -9,20 +9,33 @@ const SUPABASE_KEY = 'sb_publishable_-y7UIgFQUzoi237pCVdIGA_ANB-P8I8';   /* publ
 const RADIUS = 50;
 /* 좌표: lat=위도, lng=경도. ※ 표시된 곳은 지도에서 꼭 확인 */
 const START = [
-  {name: '국립대전현충원', lat: 36.3667, lng: 127.2992},
-  {name: '현충원역', lat: 36.3590, lng: 127.3215}
+  {name: '국립대전현충원', lat: 36.362180, lng: 127.300406},
+  {name: '현충원역', lat: 36.359085, lng: 127.321798}
 ];
 const STOPS = [
   /* coord: 'ok' = 자료로 확인, 'check' = 현장 확인 전 (실제 인증이 빗나갈 수 있음) */
-  {id: 's1', name: '중앙로역', sub: '원도심 도보 시작', lat: 36.328645, lng: 127.425871, coord: 'ok', coordSrc: '위키백과 역 정보 좌표 (2026.11.22 확인)',
+  {id: 's1', name: '중앙로역', sub: '원도심 도보 시작', lat: 36.328665, lng: 127.425828, coord: 'ok', coordSrc: '카카오맵 장소 좌표 (2026.11.22 확인)',
    text: '현충원역에서 1호선을 타고 도착한 원도심의 첫걸음입니다. 여기서부터 걸어요.'},
-  {id: 's2', name: '대전근현대사전시관', sub: '옛 충남도청', lat: 36.3267, lng: 127.4204, coord: 'check', coordSrc: '지도에서 읽은 값, 현장 확인 필요',
+  {id: 's2', name: '대전근현대사전시관', sub: '옛 충남도청', lat: 36.326798, lng: 127.420891, coord: 'ok', coordSrc: '카카오맵 장소 좌표 (2026.11.22 확인)',
    text: '1932년에 지어진 옛 충남도청 건물입니다. 대전의 근현대 이야기를 만나요. (10:00~18:00, 월요일 휴관, 무료)'},
-  {id: 's3', name: '옛 대전형무소 망루·우물', sub: '중구 목중로 34', lat: 36.3390, lng: 127.4160, coord: 'check', coordSrc: '주소(중구 목중로 34)만 공식 확인, 좌표는 현장 확인 필요',
+  {id: 's3', name: '옛 대전형무소 망루·우물', sub: '중구 목중로 34', lat: 36.336683, lng: 127.410697, coord: 'ok', coordSrc: '카카오맵 구대전형무소망루 장소 좌표 (2026.11.22 확인)',
    text: '독립운동가들이 거쳐 간 옛 대전형무소의 흔적입니다. 우물은 2022년 대전시 첫 등록문화재가 되었어요.'},
-  {id: 's4', name: '대전역', sub: '코스 도착', lat: 36.331331, lng: 127.433019, coord: 'ok', coordSrc: '위키백과 1호선 대전역 좌표 (2026.11.22 확인)',
+  {id: 's4', name: '대전역', sub: '코스 도착', lat: 36.332294, lng: 127.434645, coord: 'ok', coordSrc: '카카오맵 대전역(중앙로 215) 장소 좌표 (2026.11.22 확인)',
    text: '코스의 마지막 지점입니다. 1호선과 철도가 이어지는 곳에서 하루를 마무리해요.'}
 ];
+
+
+/* 지도에 그릴 실제 경로 (2026.11.22 생성)
+   셔틀: 오픈스트리트맵 자동차 경로(OSRM), 걷기: 오픈스트리트맵 도보 경로(OSRM), 1호선: 카카오맵 역 좌표를 순서대로 이은 선.
+   셔틀 실제 운행 경로와 다를 수 있어요. 좌표 순서는 [위도, 경도]. */
+const SUBWAY_STATIONS = [['현충원',36.359085,127.321798],['구암',36.356696,127.330732],['유성온천',36.353720,127.341446],['갑천',36.354749,127.354690],['월평',36.358259,127.364600],['갈마',36.357581,127.372797],['정부청사',36.357471,127.381268],['시청',36.351524,127.386751],['탄방',36.345547,127.384570],['용문',36.338167,127.393411],['오룡',36.328689,127.404921],['서대전네거리',36.322422,127.412576],['중구청',36.324803,127.419553],['중앙로',36.328665,127.425828]];
+const ROUTES = {
+  shuttle: [[36.36218,127.30027],[36.36209,127.30027],[36.362,127.30016],[36.36155,127.29946],[36.3615,127.29921],[36.36034,127.2992],[36.36032,127.30279],[36.36041,127.30513],[36.36032,127.30602],[36.36014,127.30681],[36.35911,127.30948],[36.35898,127.31046],[36.35909,127.31503],[36.35937,127.31777],[36.35937,127.32059],[36.35914,127.32112],[36.35914,127.3218]],
+  subway: SUBWAY_STATIONS.map(s => [s[1], s[2]]),
+  walk: [[[36.32865,127.42581],[36.32691,127.42118]], [[36.32691,127.42118],[36.32707,127.42155],[36.32848,127.42075],[36.32828,127.42021],[36.32944,127.41957],[36.32905,127.41839],[36.32949,127.41816],[36.32925,127.41747],[36.33223,127.41594],[36.33228,127.41591],[36.33222,127.41575],[36.33302,127.41534],[36.33428,127.41356],[36.33429,127.41341],[36.33442,127.41341],[36.3345,127.41349],[36.33618,127.4111],[36.3366,127.41059]], [[36.3366,127.41059],[36.33618,127.4111],[36.33458,127.41339],[36.3345,127.41349],[36.33442,127.41341],[36.33429,127.41341],[36.33428,127.41356],[36.33302,127.41534],[36.33265,127.41564],[36.33277,127.41583],[36.33244,127.41703],[36.33241,127.41717],[36.33247,127.4172],[36.33212,127.41885],[36.33106,127.42212],[36.33096,127.42223],[36.33158,127.4234],[36.33126,127.42381],[36.33174,127.42451],[36.33139,127.42498],[36.33152,127.42631],[36.33133,127.42657],[36.33149,127.42674],[36.33065,127.42795],[36.33093,127.42827],[36.33072,127.42857],[36.3309,127.42876],[36.33083,127.42885],[36.33157,127.43079],[36.33117,127.4311],[36.33129,127.43141],[36.33089,127.43169],[36.33126,127.43268],[36.33185,127.43242],[36.33175,127.43339],[36.33208,127.43477]]],
+  walkM: [470, 1720, 2940]
+};
+const toP = a => ({lat: a[0], lng: a[1]});
 
 /* 장소 설명: 출처로 확인한 내용만 적었어요. 고칠 때도 확인한 사실만 넣어 주세요. */
 const SRC = {
@@ -147,7 +160,7 @@ const show = () => {
   moveThumb(TABS.indexOf(v));
   window.scrollTo(0, 0);
   if (v === 'intro') { $('track').scrollLeft = 0; setSlide(0); }
-  if (v === 'map') { drawSvg(); initKakao(); if (kmap) kmap.relayout(); }
+  if (v === 'map') { drawSvg(); initKakao(); if (kmap) requestAnimationFrame(() => { kmap.relayout(); if (fitAll) fitAll(); }); }
 };
 window.addEventListener('hashchange', show);
 
@@ -358,9 +371,9 @@ const renderSteps = () => {
   const legs = [
     {from: START[0], to: START[1], how: '셔틀 보훈모시미', note: '현충원 안에서 타요. 시간표는 현충원 공지 확인 (2024.2. 기준 30분 간격)'},
     {from: START[1], to: STOPS[0], how: '도시철도 1호선 (판암 방면)', note: '약 24분, 1호선 시간표 기준 추정'},
-    {from: STOPS[0], to: STOPS[1], how: '걷기', note: '직선 약 ' + fmt(dist(STOPS[0], STOPS[1])) + ', 실제 길은 더 길어요'},
-    {from: STOPS[1], to: STOPS[2], how: '걷기', note: '직선 약 ' + fmt(dist(STOPS[1], STOPS[2])) + ', 실제 길은 더 길어요'},
-    {from: STOPS[2], to: STOPS[3], how: '걷기', note: '직선 약 ' + fmt(dist(STOPS[2], STOPS[3])) + ', 실제 길은 더 길어요'}
+    {from: STOPS[0], to: STOPS[1], how: '걷기', note: '걸어서 약 ' + fmt(ROUTES.walkM[0]) + ' (지도 경로 기준)'},
+    {from: STOPS[1], to: STOPS[2], how: '걷기', note: '걸어서 약 ' + fmt(ROUTES.walkM[1]) + ' (지도 경로 기준)'},
+    {from: STOPS[2], to: STOPS[3], how: '걷기', note: '걸어서 약 ' + fmt(ROUTES.walkM[2]) + ' (지도 경로 기준)'}
   ];
   $('steps').innerHTML = legs.map((l, i) => `<li><span class="st-n">${i + 1}</span><div><b>${l.from.name} → ${l.to.name}</b><span class="st-how">${l.how}</span><span class="st-note">${l.note}</span><a class="btn sec sm" href="${kakaoFromTo(l.from, l.to)}" target="_blank" rel="noopener">이 구간 길찾기</a></div></li>`).join('');
 };
@@ -423,9 +436,10 @@ function drawSvg() {
   const P = p => [ox + (p.lng - minLn) * kx * k, oy + (maxLa - p.lat) * k];
   const seg = (a, b, st) => { const [x1, y1] = P(a), [x2, y2] = P(b); return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-linecap="round" fill="none" ${st}/>`; };
   const c = {sub: tok('--route-subway'), walk: tok('--route-walk'), bus: tok('--route-shuttle'), start: tok('--route-start'), card: tok('--color-surface-raised'), ink: tok('--color-text-secondary'), onb: tok('--stamp-ink-done'), done: tok('--stamp-fill-done')};
-  let o = seg(START[0], START[1], `stroke="${c.bus}" stroke-width="2.5" stroke-dasharray="2 6"`);
-  o += seg(START[1], STOPS[0], `stroke="${c.sub}" stroke-width="7"`);
-  for (let i = 0; i < STOPS.length - 1; i++) o += seg(STOPS[i], STOPS[i + 1], `stroke="${c.walk}" stroke-width="3.5" stroke-dasharray="8 6"`);
+  const pl = (arr, st) => `<polyline points="${arr.map(a => P(toP(a)).join(',')).join(' ')}" stroke-linecap="round" stroke-linejoin="round" fill="none" ${st}/>`;
+  let o = pl(ROUTES.shuttle, `stroke="${c.bus}" stroke-width="2.5" stroke-dasharray="2 6"`);
+  o += pl(ROUTES.subway, `stroke="${c.sub}" stroke-width="7"`);
+  ROUTES.walk.forEach(w => { o += pl(w, `stroke="${c.walk}" stroke-width="3.5" stroke-dasharray="8 6"`); });
   START.forEach(p => { const [x, y] = P(p); o += `<circle data-p="${p.name}" cx="${x}" cy="${y}" r="16" fill="transparent"/><circle data-p="${p.name}" cx="${x}" cy="${y}" r="9" fill="${c.card}" stroke="${c.start}" stroke-width="4"/>`; });
   STOPS.forEach((p, i) => {
     const [x, y] = P(p), d = stamped[p.id];
@@ -441,7 +455,7 @@ new ResizeObserver(drawSvg).observe(svg);
 svg.addEventListener('click', e => { const t = e.target.closest('[data-p]'); if (t) openPlace(t.dataset.p); });
 
 /* ---------- 카카오 지도: 택배한눈처럼 한 번만 불러오고, 실패하면 다음에 다시 시도 ---------- */
-let kakaoLoading = null, kmap = null, refreshPins = null;
+let kakaoLoading = null, kmap = null, refreshPins = null, fitAll = null;
 const loadKakao = () => {
   if (!KAKAO_JS_KEY) return Promise.reject(new Error('no key'));
   if (window.kakao && window.kakao.maps && window.kakao.maps.Map) return Promise.resolve(window.kakao);
@@ -462,15 +476,17 @@ function initKakao() {
   loadKakao().then(kakao => {
     if (kmap) return;
     const box = $('kmap');
-    box.hidden = false; svg.hidden = true;
+    if (!box.closest('.view') || box.closest('.view').hidden) return; /* 지도 화면이 안 보일 때 만들면 크기가 0이라 타일과 표시가 어긋난다 */
+    box.hidden = false; svg.hidden = true; svg.innerHTML = '';
     $('maptools').hidden = false;
     const LL = p => new kakao.maps.LatLng(p.lat, p.lng);
     kmap = new kakao.maps.Map(box, {center: LL(STOPS[1]), level: 7});
     kmap.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT);
     const line = (path, color, w, style) => new kakao.maps.Polyline({map: kmap, path: path.map(LL), strokeWeight: w, strokeColor: color, strokeOpacity: .95, strokeStyle: style});
-    line(START, tok('--route-shuttle'), 3, 'shortdot');
-    line([START[1], STOPS[0]], tok('--route-subway'), 7, 'solid');
-    line(STOPS, tok('--route-walk'), 4, 'dash');
+    line(ROUTES.shuttle.map(toP), tok('--route-shuttle'), 4, 'shortdot');
+    line(ROUTES.subway.map(toP), tok('--route-subway'), 7, 'solid');
+    ROUTES.walk.forEach(w => line(w.map(toP), tok('--route-walk'), 5, 'shortdash'));
+    SUBWAY_STATIONS.slice(1, -1).forEach(st => new kakao.maps.CustomOverlay({map: kmap, position: LL({lat: st[1], lng: st[2]}), yAnchor: .5, zIndex: 1, content: '<span class="kst" aria-hidden="true"></span>'}));
     START.forEach(p => {
       const el = document.createElement('button');
       el.type = 'button'; el.className = 'klabel'; el.textContent = p.name;
@@ -489,7 +505,8 @@ function initKakao() {
     const fit = arr => { const b = new kakao.maps.LatLngBounds(); arr.forEach(p => b.extend(LL(p))); kmap.setBounds(b, 40, 40, 40, 40); };
     $('viewAll').onclick = () => fit(PLACES);
     $('viewOld').onclick = () => fit(STOPS);
-    fit(PLACES);
+    fitAll = () => fit(PLACES);
+    requestAnimationFrame(() => { kmap.relayout(); fitAll(); });
     new ResizeObserver(() => kmap.relayout()).observe(box);
   }).catch(() => { /* 키·도메인 문제면 기본 노선도를 그대로 쓴다 */ });
 }
