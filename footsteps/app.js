@@ -10,13 +10,14 @@ const START = [
   {name: '현충원역', lat: 36.3590, lng: 127.3215}
 ];
 const STOPS = [
-  {id: 's1', name: '중앙로역', sub: '원도심 도보 시작', lat: 36.3289, lng: 127.4275, /* ※ 확인 */
+  /* coord: 'ok' = 자료로 확인, 'check' = 현장 확인 전 (실제 인증이 빗나갈 수 있음) */
+  {id: 's1', name: '중앙로역', sub: '원도심 도보 시작', lat: 36.328645, lng: 127.425871, coord: 'ok', coordSrc: '위키백과 역 정보 좌표 (2026.11.22 확인)',
    text: '현충원역에서 1호선을 타고 도착한 원도심의 첫걸음입니다. 여기서부터 걸어요.'},
-  {id: 's2', name: '대전근현대사전시관', sub: '옛 충남도청', lat: 36.3267, lng: 127.4204,
+  {id: 's2', name: '대전근현대사전시관', sub: '옛 충남도청', lat: 36.3267, lng: 127.4204, coord: 'check', coordSrc: '지도에서 읽은 값, 현장 확인 필요',
    text: '1932년에 지어진 옛 충남도청 건물입니다. 대전의 근현대 이야기를 만나요. (10:00~18:00, 월요일 휴관, 무료)'},
-  {id: 's3', name: '옛 대전형무소 망루·우물', sub: '중구 목중로 34', lat: 36.3390, lng: 127.4160, /* ※ 확인 */
+  {id: 's3', name: '옛 대전형무소 망루·우물', sub: '중구 목중로 34', lat: 36.3390, lng: 127.4160, coord: 'check', coordSrc: '주소(중구 목중로 34)만 공식 확인, 좌표는 현장 확인 필요',
    text: '독립운동가들이 거쳐 간 옛 대전형무소의 흔적입니다. 우물은 2022년 대전시 첫 등록문화재가 되었어요.'},
-  {id: 's4', name: '대전역', sub: '코스 도착', lat: 36.3323, lng: 127.4342, /* ※ 확인 */
+  {id: 's4', name: '대전역', sub: '코스 도착', lat: 36.331331, lng: 127.433019, coord: 'ok', coordSrc: '위키백과 1호선 대전역 좌표 (2026.11.22 확인)',
    text: '코스의 마지막 지점입니다. 1호선과 철도가 이어지는 곳에서 하루를 마무리해요.'}
 ];
 
@@ -26,13 +27,14 @@ const SRC = {
   well: ['KPI뉴스 · 옛 대전형무소 우물 대전시 첫 등록문화재', 'https://kpinews.kr/newsView/179548667587651'],
   prison: ['프레시안 · 대전의 함성, 잊혀서는 안 될 독립운동의 역사', 'https://www.pressian.com/pages/articles/2025030111022130392'],
   tour: ['1920~30년대 대전 원도심 투어', 'https://twig24.com/news/lifestyle/trip/2018/06/21/20180621019011'],
-  nc: ['국립대전현충원', 'https://www.dnc.go.kr']
+  nc: ['국립대전현충원', 'https://www.dnc.go.kr'],
+  heritage: ['국가유산포털 해설문(한국학중앙연구원 정리)', 'https://dh.aks.ac.kr/~heritage/wiki/index.php/%EA%B5%AC_%EB%8C%80%EC%A0%84%ED%98%95%EB%AC%B4%EC%86%8C_%EB%A7%9D%EB%A3%A8']
 };
 const DETAILS = {
   '국립대전현충원': {
     kind: '출발 · 스탬프 없음',
     desc: ['나라를 위해 희생하신 분들이 잠든 국립묘지예요. 국립현충원은 서울과 대전 두 곳에 있어요.', '이 코스는 참배를 마친 뒤 출발해요. 추모 공간이라 현충원 안에는 스탬프를 두지 않았어요.'],
-    info: [['주소', '대전 유성구 현충원로 251'], ['개방', '연중무휴 · 11~2월 07:00~18:00'], ['역에서', '현충원역 2번 출구 21번 승강장 무료 셔틀 ‘보훈모시미’ · 30분 간격 · 역 출발 09:05~16:35 (2024.2. 공지 기준)']],
+    info: [['주소', '대전 유성구 현충원로 251'], ['개방', '연중무휴 · 11~2월 07:00~18:00'], ['역에서', '현충원역 2번 출구 21번 승강장 무료 셔틀 보훈모시미, 30분 간격, 역 출발 09:05~16:35'], ['확인 기준', '현충원 2024.2.1. 공지 기준. 2026.11.22에 최신 공지를 찾지 못해 바뀌었을 수 있어요. 출발 전 현충원 누리집(dnc.go.kr) 교통 안내를 확인하세요.']],
     tip: '<b>예절</b> · 묘역에서는 조용히 걷고, 다른 참배객의 사진을 찍지 않아요.',
     src: ['nc']
   },
@@ -53,16 +55,16 @@ const DETAILS = {
   '대전근현대사전시관': {
     kind: '스탬프 2 · 옛 충남도청',
     desc: ['1932년에 지어진 옛 충남도청사 본관 1층에 있는 전시관이에요. 대전시립박물관이 운영해요.', '1930년대 초 건물 가운데 원형이 잘 남은 근대 건축물이라, 건물 자체도 볼거리예요. 안에서는 대전의 근현대사를 상설·특별 전시로 만날 수 있어요.'],
-    info: [['관람', '11~2월 10:00~18:00 (입장 17:30까지) · 3~10월 10:00~19:00'], ['휴관', '매주 월요일 (공휴일이면 다음 날) · 1월 1일 · 설·추석 당일'], ['요금', '무료'], ['문의', '042-270-4537'], ['가는 길', '중구청역 4번 출구에서 약 300m']],
+    info: [['관람', '11~2월 10:00~18:00 (입장 17:30까지) · 3~10월 10:00~19:00'], ['휴관', '매주 월요일 (공휴일이면 다음 날) · 1월 1일 · 설·추석 당일'], ['요금', '무료'], ['문의', '042-270-4537'], ['가는 길', '중구청역 4번 출구에서 약 300m'], ['확인 기준', '대한민국 구석구석 안내(2026.3.11 수정본), 2026.11.22 확인. 휴관일은 바뀔 수 있으니 방문 전 문의하세요.']],
     tip: '<b>답사 팁</b> · 월요일에는 문을 닫아요. 일정을 짤 때 꼭 확인하세요.',
     src: ['hall', 'tour']
   },
   '옛 대전형무소 망루·우물': {
     kind: '스탬프 3 · 기억의 터',
     desc: ['일제강점기 대전감옥소로 시작한 대전형무소 자리예요. 지금은 아파트 단지 사이에 망루와 우물이 남아 있어요.', '1919년 만세운동 뒤 붙잡힌 독립운동가들이 이곳에 수감되었어요. 우물은 1919년 설치된 취사장 우물로, 한국전쟁 때 민간인이 희생된 아픈 역사도 함께 남아 있어요.', '이 우물은 2022년 대전시 첫 등록문화재가 되었어요.'],
-    info: [['남은 것', '망루, 우물'], ['문화유산', '구 대전형무소 우물 · 2022년 대전시 등록문화재']],
+    info: [['남은 것', '망루, 우물'], ['문화유산', '망루: 대전시 문화재자료 제47호(2001) · 우물: 대전시 등록문화유산(2022.6.25)'], ['확인 기준', '국가유산포털 해설문 기준, 2026.11.22 확인']],
     tip: '<b>예절</b> · 희생의 아픔이 남은 곳이자 주민이 사는 곳이에요. 조용히 둘러봐 주세요.',
-    src: ['well', 'prison']
+    src: ['heritage', 'well', 'prison']
   },
   '대전역': {
     kind: '스탬프 4 · 코스 도착',
@@ -151,7 +153,7 @@ const renderStamps = () => {
     const cls = ['stop', done ? 'done' : '', i === ni ? 'next' : '', s.id === justStamped ? 'just' : ''].join(' ').trim();
     return `<li class="${cls}">
       <div class="head"><span class="stamp${done ? ' art' : ''}" aria-hidden="true">${done ? stampSvg(s.id, 52) : i + 1}</span>
-      <div><h3>${s.name}</h3><p class="meta">${s.sub}${done ? ' · 스탬프 완료' : (i === ni ? ' · 지금 갈 곳' : ' · ' + STOPS[i - 1].name + ' 다음')}</p></div></div>
+      <div><h3>${s.name}</h3><p class="meta">${s.coord === 'check' ? '<span class="coord-warn">좌표 현장 확인 전</span> ' : ''}${s.sub}${done ? ' · 스탬프 완료' : (i === ni ? ' · 지금 갈 곳' : ' · ' + STOPS[i - 1].name + ' 다음')}</p></div></div>
       ${done ? `<p class="body">${s.text}</p>${nx ? `<p class="next-hint">다음: ${nx.name} · 직선 약 ${fmt(dist(s, nx))}</p>` : ''}` : ''}
       <div class="row">
         ${done ? '' : i === ni ? `<button class="btn sm" type="button" data-id="${s.id}">도착 확인</button>` : `<button class="btn sm locked" type="button" disabled aria-label="${STOPS[ni].name} 스탬프를 먼저 찍어야 열려요"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>잠김</button>`}
@@ -193,6 +195,7 @@ const renderFinish = () => {
 const shareText = () => doneCount() === STOPS.length ? SHARE_TEXT_DONE : SHARE_TEXT_INTRO;
 
 const render = () => {
+  renderSteps();
   renderStamps(); renderPlaces(); renderFinish(); drawSvg();
   if (refreshPins) refreshPins();
 };
@@ -243,24 +246,50 @@ $('stops').addEventListener('click', e => {
   const s = STOPS.find(x => x.id === b.dataset.id);
   const msg = $('m-' + s.id);
   if (STOPS.indexOf(s) !== nextIndex()) { msg.textContent = '앞 지점의 스탬프를 먼저 찍어 주세요.'; return; }
-  if ($('demo').checked) { stamp(s); return; }
+  if ($('demo').checked) { stamp(s); announce(s.name + ' 스탬프를 찍었어요. 시연 모드라 위치는 확인하지 않았어요.'); return; }
   if (!('geolocation' in navigator)) { msg.textContent = '이 기기에서는 위치 확인을 쓸 수 없어요.'; return; }
   b.disabled = true;
   msg.textContent = '위치를 확인하는 중…';
   /* 위치는 이 버튼을 누를 때 한 번만 읽고, 거리 계산 뒤 바로 버린다 */
   navigator.geolocation.getCurrentPosition(pos => {
     const d = dist({lat: pos.coords.latitude, lng: pos.coords.longitude}, s);
+    const acc = Math.round(pos.coords.accuracy || 0);
     b.disabled = false;
-    if (d <= RADIUS) stamp(s);
-    else msg.textContent = `${s.name}까지 약 ${fmt(d)} 남았어요. ${RADIUS}m 안에서 다시 눌러 주세요.`;
+    const tail = s.coord === 'check' ? ' 이 지점 좌표는 아직 현장 확인 전이라 빗나갈 수 있어요. 계속 안 되면 시연 모드를 쓰세요.' : '';
+    if (d <= RADIUS && acc <= 80) { stamp(s); announce(s.name + ' 스탬프를 찍었어요.'); return; }
+    if (acc > 80) {
+      msg.textContent = `휴대폰이 잡은 위치의 오차가 약 ${acc}m로 커서 확인할 수 없어요. 건물 밖 하늘이 보이는 곳에서 10초쯤 기다린 뒤 다시 눌러 주세요. 와이파이를 켜 두면 더 정확해져요.` + tail;
+    } else if (d - acc <= RADIUS) {
+      msg.textContent = `거의 다 왔어요. 약 ${fmt(d)} 떨어져 있고 오차가 ${acc}m라, 몇 걸음 더 가까이 가서 다시 눌러 주세요.` + tail;
+    } else {
+      msg.textContent = `${s.name}까지 약 ${fmt(d)} 남았어요 (위치 오차 약 ${acc}m). ${RADIUS}m 안에 들어와 다시 눌러 주세요.` + tail;
+    }
+    announce('스탬프를 찍지 못했어요. ' + msg.textContent);
   }, err => {
     b.disabled = false;
-    msg.textContent = err && err.code === 1 ? '위치 권한이 꺼져 있어요. 브라우저 설정에서 이 사이트의 위치를 허용해 주세요.' : '위치를 확인하지 못했어요. 잠시 뒤 다시 눌러 주세요.';
+    msg.textContent = err && err.code === 1 ? '위치 권한이 꺼져 있어요. 브라우저 설정에서 이 사이트의 위치를 허용한 뒤 다시 눌러 주세요.' : '위치를 확인하지 못했어요. 건물 밖으로 나와 잠시 뒤 다시 눌러 주세요.';
+    announce('스탬프를 찍지 못했어요. ' + msg.textContent);
   }, {enableHighAccuracy: true, timeout: 12000, maximumAge: 0});
 });
 $('demo').addEventListener('change', () => document.body.classList.toggle('demo', $('demo').checked));
 $('reset').addEventListener('click', () => { stamped = {}; save(); render(); });
 document.querySelector('.hero-cta a').addEventListener('click', markStarted);
+
+/* 화면 읽기 도구용 알림 */
+const announce = t => { const el = $('sr-live'); el.textContent = ''; setTimeout(() => { el.textContent = t; }, 60); };
+
+/* ---------- 이동 순서 (구간별 길찾기) ---------- */
+const kakaoFromTo = (a, b, by) => 'https://map.kakao.com/link/from/' + encodeURIComponent(a.name) + ',' + a.lat + ',' + a.lng + '/to/' + encodeURIComponent(b.name) + ',' + b.lat + ',' + b.lng;
+const renderSteps = () => {
+  const legs = [
+    {from: START[0], to: START[1], how: '셔틀 보훈모시미', note: '현충원 안에서 타요. 시간표는 현충원 공지 확인 (2024.2. 기준 30분 간격)'},
+    {from: START[1], to: STOPS[0], how: '도시철도 1호선 (판암 방면)', note: '약 24분, 1호선 시간표 기준 추정'},
+    {from: STOPS[0], to: STOPS[1], how: '걷기', note: '직선 약 ' + fmt(dist(STOPS[0], STOPS[1])) + ', 실제 길은 더 길어요'},
+    {from: STOPS[1], to: STOPS[2], how: '걷기', note: '직선 약 ' + fmt(dist(STOPS[1], STOPS[2])) + ', 실제 길은 더 길어요'},
+    {from: STOPS[2], to: STOPS[3], how: '걷기', note: '직선 약 ' + fmt(dist(STOPS[2], STOPS[3])) + ', 실제 길은 더 길어요'}
+  ];
+  $('steps').innerHTML = legs.map((l, i) => `<li><span class="st-n">${i + 1}</span><div><b>${l.from.name} → ${l.to.name}</b><span class="st-how">${l.how}</span><span class="st-note">${l.note}</span><a class="btn sec sm" href="${kakaoFromTo(l.from, l.to)}" target="_blank" rel="noopener">이 구간 길찾기</a></div></li>`).join('');
+};
 
 /* ---------- 금색 완주 배지 ---------- */
 const badgeDlg = $('badgeDlg');
@@ -548,6 +577,12 @@ document.addEventListener('visibilitychange', () => { g.active = false; resetThu
 window.addEventListener('scroll', () => { if (!g.moved && g.active) { g.active = false; resetThumb(); } }, {passive: true});
 bar.addEventListener('dragstart', e => e.preventDefault());
 bar.addEventListener('click', e => { if (g.suppress) { e.preventDefault(); g.suppress = false; } }, true);
+
+/* 큰 글씨 */
+const BIG_KEY = 'footsteps-big';
+const setBig = on => { document.documentElement.classList.toggle('big', on); $('bigBtn').setAttribute('aria-pressed', on); $('bigBtn').textContent = on ? '글씨 보통' : '글씨 크게'; try { localStorage.setItem(BIG_KEY, on ? '1' : '0'); } catch (e) {} };
+$('bigBtn').addEventListener('click', () => setBig(!document.documentElement.classList.contains('big')));
+try { setBig(localStorage.getItem(BIG_KEY) === '1'); } catch (e) {}
 
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
 render();

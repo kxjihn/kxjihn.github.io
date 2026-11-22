@@ -307,3 +307,23 @@ dialog{overflow:hidden}
 @keyframes fx-petal{0%{opacity:0;transform:translate(0,0) rotate(0) scale(.6)}15%{opacity:.95}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(1)}}
 @keyframes fx-card{0%{opacity:0;transform:translate(-50%,16px)}15%{opacity:1;transform:translate(-50%,0)}80%{opacity:1}100%{opacity:0}}
 body.no-nav{padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+
+/* 보완: 지도 경고, 이동 순서, 모드 안내, 큰 글씨, 화면 읽기 */
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.map-warn{font-size:var(--size-sm);background:var(--color-highlight);color:var(--color-text-primary);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4)}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:var(--space-2)}
+.steps li{display:flex;gap:var(--space-3);align-items:flex-start;background:var(--card-bg);border:var(--border-thin) solid var(--card-border);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4)}
+.st-n{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--color-action-primary);color:#fff;font-weight:700}
+.steps b{display:block}
+.st-how{display:block;color:var(--color-text-brand);font-weight:var(--weight-medium);font-size:var(--size-sm)}
+.st-note{display:block;color:var(--color-text-secondary);font-size:var(--size-sm);margin-bottom:var(--space-2)}
+.mode-note{font-size:var(--size-sm);color:var(--color-text-secondary);background:var(--color-surface-tint);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4)}
+.coord-warn{display:inline-block;font-size:12px;font-weight:700;color:#7a4a00;background:#fbefc4;border-radius:999px;padding:0 8px}
+.big-btn{position:absolute;right:max(var(--space-4),env(safe-area-inset-right));top:calc(14px + env(safe-area-inset-top));min-height:40px;padding:0 14px;border-radius:999px;border:var(--border-thick) solid var(--color-action-secondary);background:var(--color-surface-raised);color:var(--color-text-brand);font:700 14px var(--font-body);cursor:pointer;z-index:2}
+.top{position:sticky}
+@media(max-width:420px){.brand small{display:none}.brand b{font-size:20px}}
+html.big body{font-size:19px}
+html.big .meta,html.big .sub,html.big .msg,html.big .st-note,html.big .st-how,html.big .privacy,html.big .mode-note,html.big .map-warn,html.big .stop .body,html.big .dlg-desc,html.big .info{font-size:17px}
+html.big .stop h3{font-size:26px}
+html.big .glass-bar a{font-size:16px}
+.meta,.sub{color:var(--color-text-secondary)}
