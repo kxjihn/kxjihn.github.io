@@ -682,7 +682,7 @@ try { setBig(localStorage.getItem(BIG_KEY) === '1'); } catch (e) {}
   if (!root) return;
   const scenes = [...root.querySelectorAll('.holo-scene')];
   const dots = [...root.querySelectorAll('.holo-dots button')];
-  const DWELL = [8000, 6500, 6500, 6500]; /* 현충원은 조금 더 오래, 차분하게 머문다 */
+  const DWELL = [7500, 6000, 6000, 6000]; /* 현충원은 조금 더 오래, 차분하게 머문다 */
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
   let cur = 0, timer = 0, hold = false;
   const show = i => {
@@ -696,7 +696,7 @@ try { setBig(localStorage.getItem(BIG_KEY) === '1'); } catch (e) {}
   const visible = () => !document.hidden && !root.closest('.view').hidden;
   const plan = () => {
     clearTimeout(timer);
-    if (hold || reduce.matches) return;
+    if (hold) return; /* 움직임 줄이기 설정이어도 장면은 넘어가되, 선 그리기 같은 움직임은 CSS에서 끈다 */
     timer = setTimeout(() => { if (visible()) show(cur + 1); plan(); }, DWELL[cur]);
   };
   const go = i => { show(i); plan(); };
@@ -705,8 +705,8 @@ try { setBig(localStorage.getItem(BIG_KEY) === '1'); } catch (e) {}
   $('holoNext').addEventListener('click', () => go(cur + 1));
   /* 마우스를 올리거나 키보드 포커스가 있으면 멈춘다 */
   root.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') { hold = true; plan(); } });
-  root.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') { hold = root.contains(document.activeElement); plan(); } });
-  root.addEventListener('focusin', () => { hold = true; plan(); });
+  root.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') { hold = !!root.querySelector(':focus-visible') || root.matches(':focus-visible'); plan(); } });
+  root.addEventListener('focusin', () => { hold = !!root.querySelector(':focus-visible') || root.matches(':focus-visible'); plan(); }); /* 키보드로 들어왔을 때만 멈춘다. 손가락·마우스로 누른 뒤에는 계속 넘어간다 */
   root.addEventListener('focusout', e => { if (!root.contains(e.relatedTarget)) { hold = root.matches(':hover') && matchMedia('(hover: hover)').matches; plan(); } });
   root.addEventListener('keydown', e => {
     if (e.key === 'ArrowRight') { e.preventDefault(); go(cur + 1); }
