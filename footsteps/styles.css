@@ -389,11 +389,9 @@ box-shadow:inset 0 0 0 1px rgb(140 230 222/.14),inset 0 -40px 60px rgb(0 0 0/.35
 .holo-scene.is-on{opacity:1;visibility:visible;transition:opacity 1.1s ease,visibility 0s}
 .holo-art{position:absolute;left:7%;right:7%;top:8%;bottom:26%;display:grid;place-items:end center}
 .holo-art.photo img{width:100%;height:100%;object-fit:contain;object-position:50% 100%;
-filter:grayscale(1) contrast(1.35) brightness(.72);mix-blend-mode:screen;opacity:.82;
+filter:grayscale(1) sepia(.9) hue-rotate(270deg) saturate(1.5) contrast(1.3) brightness(.78);mix-blend-mode:screen;opacity:.85;
 -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 38%,#000 86%,transparent 100%),linear-gradient(90deg,transparent 0,#000 16%,#000 84%,transparent 100%);
 -webkit-mask-composite:source-in;mask-image:linear-gradient(180deg,transparent 0,#000 38%,#000 86%,transparent 100%),linear-gradient(90deg,transparent 0,#000 16%,#000 84%,transparent 100%);mask-composite:intersect}
-.holo-art.photo::after{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:color;
-background:linear-gradient(180deg,rgb(120 210 205/.5),rgb(214 140 196/.55) 50%,rgb(170 50 125/.6))}
 .holo-art.photo::before{content:"";position:absolute;left:6%;right:6%;bottom:0;height:1px;background:linear-gradient(90deg,transparent,rgb(140 230 222/.55),transparent);box-shadow:0 0 10px rgb(140 230 222/.35)}
 .holo-art.line svg{width:100%;height:100%}
 .holo-art.line .ln{stroke:#f0b8dc;stroke-width:2.2;filter:drop-shadow(0 0 3px rgb(140 230 222/.6));stroke-dasharray:420;stroke-dashoffset:0}

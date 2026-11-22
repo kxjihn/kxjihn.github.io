@@ -676,12 +676,6 @@ const setBig = on => { document.documentElement.classList.toggle('big', on); $('
 $('bigBtn').addEventListener('click', () => setBig(!document.documentElement.classList.contains('big')));
 try { setBig(localStorage.getItem(BIG_KEY) === '1'); } catch (e) {}
 
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
-render();
-show();
-initAuth();
-}
-
 /* ---------- 첫 화면 홀로그램 장면: 네 장소를 차례로 보여 준다 ---------- */
 (() => {
   const root = $('holo');
@@ -734,3 +728,10 @@ initAuth();
   document.addEventListener('visibilitychange', plan);
   show(0); plan();
 })();
+
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
+render();
+show();
+initAuth();
+}
+
