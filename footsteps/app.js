@@ -291,12 +291,14 @@ const authReady = () => !!(SUPABASE_URL && SUPABASE_KEY && window.supabase);
 function initAuth() {
   if (!authReady()) { renderAcct(); return; }
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  sb.auth.getSession().then(({data}) => setUser(data.session ? data.session.user : null));
-  sb.auth.onAuthStateChange((_e, session) => {
-    setUser(session ? session.user : null);
+  const goStampsAfterLogin = session => {
     let back = false; try { back = sessionStorage.getItem('fs-login') === '1'; } catch (e) {}
-    if (session && back) { try { sessionStorage.removeItem('fs-login'); } catch (e) {} setTimeout(() => { location.hash = '#stamps'; }, 0); }
-  });
+    if (!session || !back) return;
+    try { sessionStorage.removeItem('fs-login'); } catch (e) {}
+    setTimeout(() => { location.hash = '#stamps'; }, 300);
+  };
+  sb.auth.getSession().then(({data}) => { setUser(data.session ? data.session.user : null); goStampsAfterLogin(data.session); });
+  sb.auth.onAuthStateChange((_e, session) => { setUser(session ? session.user : null); goStampsAfterLogin(session); });
 }
 async function setUser(u) {
   const was = user && user.id;
