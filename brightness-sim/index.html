@@ -4,126 +4,278 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>밝기와 AI 인식 정확도 시뮬레이터</title>
+<meta name="description" content="손글씨 숫자를 맞히는 신경망에 어두운 이미지를 넣으면 정확도가 어떻게 변하는지 직접 조작해보는 시뮬레이터">
+<meta name="theme-color" content="#17151C">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
-  :root{--bg:#f6f7f9;--card:#fff;--ink:#1c2230;--sub:#5d667a;--line:#dde1e9;--acc:#2f6fed;--ok:#1f9d55;--bad:#d64545}
+  :root{
+    --bg:#17151C;        /* 옵시디언 플럼 가장 어두운 색 */
+    --panel:#292531;
+    --line:#46404F;
+    --mute:#716579;
+    --soft:#AAA2B3;
+    --ink:#E2DDE7;
+    --screen:#0E0D12;
+    --copper:#E3A88F;    /* 틀린 답 표시에만 쓰는 따뜻한 색 */
+    --font:"Pretendard Variable",Pretendard,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+    --gutter:clamp(20px,5vw,64px);
+    color-scheme:dark;
+  }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif;line-height:1.5}
-  main{max-width:980px;margin:0 auto;padding:20px 16px 48px}
-  h1{font-size:22px;margin:4px 0 4px}
-  .lead{color:var(--sub);margin:0 0 16px;font-size:14px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
-  h2{font-size:16px;margin:0 0 10px}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  @media(max-width:760px){.grid2{grid-template-columns:1fr}}
-  .ctl{margin-bottom:12px}
-  .ctl label{display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:4px}
-  .ctl span.tag{font-weight:400;color:var(--sub);font-size:12px}
-  input[type=range]{width:100%;accent-color:var(--acc)}
-  .big{font-size:44px;font-weight:700;letter-spacing:-1px;line-height:1.1}
-  .big small{font-size:18px;font-weight:500;color:var(--sub)}
-  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-  button{font:inherit;font-size:14px;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--ink)}
-  button.primary{background:var(--acc);border-color:var(--acc);color:#fff}
-  button:active{transform:translateY(1px)}
-  #samples{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
-  @media(max-width:760px){#samples{grid-template-columns:repeat(5,1fr)}}
-  .cell{border:2px solid var(--line);border-radius:8px;padding:3px;text-align:center;background:#fff}
-  .cell canvas{width:100%;aspect-ratio:1;image-rendering:pixelated;display:block;border-radius:4px}
-  .cell .t{font-size:12px;margin-top:2px}
-  .cell.ok{border-color:var(--ok)} .cell.bad{border-color:var(--bad);background:#fff4f4}
-  .legend{font-size:12px;color:var(--sub);margin-top:8px}
-  canvas#chart{width:100%;height:300px;display:block}
-  table{width:100%;border-collapse:collapse;font-size:14px}
-  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:right}
+  html{background:var(--bg);-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.65;word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1}
+  h1,h2,h3,p,dl,dd,figure{margin:0}
+  button,input,select,summary{font:inherit;color:inherit}
+  button{cursor:pointer}
+  :focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:6px}
+  ::selection{background:var(--ink);color:var(--bg)}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 var(--gutter)}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+  /* 첫 화면 */
+  .hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,460px);gap:clamp(36px,6vw,88px);align-items:center;padding:clamp(24px,5vh,56px) 0 clamp(56px,9vh,104px)}
+  h1{font-weight:300;font-size:clamp(38px,5.4vw,68px);line-height:1.12;letter-spacing:-.035em}
+  .lede{color:var(--soft);max-width:30em;margin-top:22px}
+  .score{margin-top:clamp(36px,7vh,72px)}
+  .score .cap{color:var(--soft);font-size:14px}
+  .score .num{font-weight:200;font-size:clamp(84px,12vw,148px);line-height:1;letter-spacing:-.05em;margin-top:6px;font-variant-numeric:tabular-nums}
+  .score .num small{font-size:.32em;letter-spacing:0;color:var(--soft);margin-left:6px;font-weight:300}
+  .score .cond{color:var(--soft);font-size:14px;margin-top:8px}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+  .btn{border:1px solid var(--line);background:transparent;border-radius:999px;padding:10px 18px;font-size:14px;transition:background .2s,border-color .2s}
+  .btn:hover{border-color:var(--soft)}
+  .btn.solid{background:var(--ink);border-color:var(--ink);color:var(--bg);font-weight:600}
+  .btn.solid:hover{background:#fff;border-color:#fff}
+  .btn:active{transform:translateY(1px)}
+
+  /* 무대 */
+  .stage{background:var(--panel);border-radius:22px;padding:18px 18px 22px}
+  .stage-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:14px;color:var(--soft)}
+  .stage-head .nav{display:flex;gap:6px;align-items:center}
+  .stage-head button{background:none;border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:13px;color:var(--soft)}
+  .stage-head button:hover{border-color:var(--soft);color:var(--ink)}
+  .screen{background:var(--screen);border-radius:14px;padding:clamp(14px,2.6vw,20px)}
+  .screen canvas{display:block;width:100%;aspect-ratio:1}
+  .readrow{display:grid;grid-template-columns:auto minmax(0,1fr);gap:clamp(16px,3vw,28px);align-items:end;margin-top:16px}
+  .answer{min-width:84px}
+  .answer .big{font-weight:200;font-size:60px;line-height:.95;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+  .answer .lab{font-size:13px;color:var(--soft);margin-bottom:4px}
+  .answer .truth{font-size:14px;color:var(--soft);margin-top:6px}
+  .answer .truth b{font-weight:600;color:var(--ink)}
+  .answer.wrong .big{color:var(--copper)}
+  .answer.wrong .truth b{color:var(--copper)}
+  .bars{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;height:52px;align-items:end}
+  .bars div{display:flex;flex-direction:column;justify-content:flex-end;height:100%;align-items:stretch;font-size:11px;text-align:center;color:var(--mute)}
+  .bars i{display:block;background:var(--line);border-radius:3px;min-height:2px;transition:height .18s ease-out}
+  .bars span{margin-top:3px}
+  .bars div.pick i{background:var(--ink)}
+  .bars div.pick span{color:var(--ink)}
+  .bars div.truth span{text-decoration:underline;text-underline-offset:3px}
+  .barcap{font-size:12px;color:var(--mute);margin-top:6px}
+
+  .dial{margin-top:16px}
+  .dial-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .dial-row label{font-size:14px;color:var(--soft)}
+  .dial-row output{font-size:28px;font-weight:300;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;margin:0;display:block}
+  input[type=range]::-webkit-slider-runnable-track{height:2px;border-radius:2px;background:linear-gradient(to right,var(--ink) var(--p,50%),var(--line) var(--p,50%))}
+  input[type=range]::-moz-range-track{height:2px;border-radius:2px;background:var(--line)}
+  input[type=range]::-moz-range-progress{height:2px;background:var(--ink)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--ink);border:5px solid var(--panel);box-sizing:content-box;margin-top:-11px;box-shadow:0 0 0 1px var(--ink)}
+  input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--ink);border:5px solid var(--panel);box-sizing:content-box;box-shadow:0 0 0 1px var(--ink)}
+  .presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+  .presets button{background:none;border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:13px;color:var(--soft);min-width:46px;font-variant-numeric:tabular-nums}
+  .presets button:hover{border-color:var(--soft)}
+  .presets button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg);font-weight:600}
+  details.adv{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+  details.adv summary{cursor:pointer;font-size:14px;color:var(--soft);list-style:none}
+  details.adv summary::-webkit-details-marker{display:none}
+  details.adv summary::before{content:"+";display:inline-block;width:16px;color:var(--mute)}
+  details.adv[open] summary::before{content:"-"}
+  .adv-body{padding-top:10px}
+  .adv-body .dial-row output{font-size:18px}
+  .adv-body p{font-size:13px;color:var(--mute);margin-top:6px}
+
+  /* 구역 */
+  section.band{border-top:1px solid var(--line);padding:clamp(48px,8vh,88px) 0}
+  .split{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:clamp(28px,5vw,72px)}
+  h2{font-weight:500;font-size:22px;letter-spacing:-.02em;line-height:1.3}
+  .side p{color:var(--soft);font-size:15px;margin-top:12px;max-width:26em}
+  .rep{margin-top:22px}
+  .rep .dial-row output{font-size:18px}
+  .rep input[type=range]::-webkit-slider-thumb{border-color:var(--bg)}
+  .rep input[type=range]::-moz-range-thumb{border-color:var(--bg)}
+  canvas#chart{display:block;width:100%;height:340px}
+  details.tbl{margin-top:16px}
+  details.tbl summary{cursor:pointer;font-size:14px;color:var(--soft)}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-top:10px;font-variant-numeric:tabular-nums}
+  th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line)}
   th:first-child,td:first-child{text-align:left}
-  th{color:var(--sub);font-weight:600}
-  .vars{font-size:14px;margin:0;padding-left:18px}
-  .vars li{margin-bottom:3px}
-  .note{font-size:13px;color:var(--sub)}
-  textarea{width:100%;height:90px;font:12px/1.4 ui-monospace,Menlo,monospace;border:1px solid var(--line);border-radius:8px;padding:8px;margin-top:8px}
+  th{font-weight:500;color:var(--soft)}
+  .empty{color:var(--mute);font-size:14px;padding:14px 0}
+
+  #samples{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:10px}
+  .tile{background:var(--panel);border:1px solid transparent;border-radius:12px;padding:8px 8px 7px;text-align:center;cursor:pointer;color:inherit}
+  .tile:hover{border-color:var(--mute)}
+  .tile.sel{border-color:var(--ink)}
+  .tile .cv{background:var(--screen);border-radius:7px;padding:5px}
+  .tile canvas{display:block;width:100%;aspect-ratio:1}
+  .tile .t{font-size:13px;margin-top:6px;display:flex;justify-content:center;gap:4px;align-items:baseline;font-variant-numeric:tabular-nums}
+  .tile .t b{font-weight:600}
+  .tile .t s{text-decoration:none;font-size:11px;color:var(--copper)}
+  .tile.bad .t b{color:var(--copper)}
+
+  dl.design{display:grid;gap:18px}
+  dl.design dt{font-weight:600;font-size:14px;margin-bottom:2px}
+  dl.design dd{color:var(--soft);font-size:15px;max-width:34em}
+  .notes{margin-top:26px;color:var(--soft);font-size:14px;max-width:36em;display:grid;gap:10px}
+  footer{border-top:1px solid var(--line);padding:28px 0 56px;color:var(--mute);font-size:13px}
+  footer a{color:var(--soft);text-underline-offset:3px}
+  textarea{width:100%;height:96px;margin-top:10px;background:var(--screen);border:1px solid var(--line);border-radius:10px;padding:10px;color:var(--soft);font:12px/1.5 ui-monospace,Menlo,Consolas,monospace}
+
+  @media(max-width:900px){
+    .hero{grid-template-columns:1fr}
+    .split{grid-template-columns:1fr}
+    #samples{grid-template-columns:repeat(5,minmax(0,1fr))}
+    canvas#chart{height:280px}
+  }
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<main>
-  <h1>밝기와 AI 인식 정확도 시뮬레이터</h1>
-  <p class="lead">손글씨 숫자 이미지(8x8)를 인식하는 신경망에 어두운 이미지를 넣으면 정확도가 어떻게 변하는지 직접 확인해보는 시뮬레이션입니다. 모델은 원래 밝기 이미지로만 학습했고, 테스트 이미지(540장)만 어둡게 만듭니다.</p>
+<main class="wrap">
 
-  <div class="grid2">
-    <section class="card">
-      <h2>조작하기</h2>
-      <div class="ctl">
-        <label>밝기 배율 (조작 변인) <span id="vB">100%</span></label>
-        <input id="rB" type="range" min="1" max="100" value="100">
+  <header class="hero">
+    <div>
+      <h1>밝기가 낮아지면 AI는 언제부터 못 알아볼까</h1>
+      <p class="lede">손글씨 숫자를 맞히는 AI에 어두운 이미지를 넣어봅니다. 오른쪽 슬라이더로 밝기를 낮추면서, 눈에 보이지 않게 되는 순간 AI의 답이 어떻게 바뀌는지 확인해보세요.</p>
+      <div class="score" aria-live="polite">
+        <div class="cap">테스트 이미지 540장 중 맞힌 비율</div>
+        <div class="num"><span id="acc">--</span><small>%</small></div>
+        <div class="cond" id="cond"></div>
       </div>
-      <div class="ctl">
-        <label>센서 노이즈 크기 (통제 변인) <span id="vN">2</span></label>
-        <input id="rN" type="range" min="0" max="20" value="2">
-        <span class="tag">0이면 노이즈 없음. 값이 클수록 화면이 지글거립니다.</span>
+      <div class="actions">
+        <button class="btn solid" id="bRec">이 결과 기록하기</button>
+        <button class="btn" id="bSample">숫자 40장 다시 뽑기</button>
       </div>
-      <div class="row">
-        <button id="bSeed">노이즈 새로 뽑기</button>
-        <button id="bSample">샘플 40장 다시 뽑기</button>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>측정 결과 (종속 변인)</h2>
-      <div class="big"><span id="acc">--</span><small> % 정확도</small></div>
-      <p class="note" id="accSub" style="margin:6px 0 0"></p>
-      <div class="row"><button class="primary" id="bRec">이 결과 기록하기</button></div>
-    </section>
-  </div>
-
-  <section class="card">
-    <h2>화면에 보이는 샘플 40장</h2>
-    <div id="samples"></div>
-    <div class="legend">초록 테두리는 맞게 인식, 빨간 테두리는 틀리게 인식. 아래 글자는 AI가 예측한 숫자(정답).</div>
-  </section>
-
-  <section class="card">
-    <h2>밝기별 그래프 그리기</h2>
-    <p class="note" style="margin-top:0">밝기 100, 70, 50, 30, 20, 10, 5퍼센트를 차례로 측정합니다. 반복할 때마다 노이즈만 새로 뽑고, 모델과 이미지는 같습니다.</p>
-    <div class="ctl" style="max-width:360px">
-      <label>반복 횟수 <span id="vR">10회</span></label>
-      <input id="rR" type="range" min="1" max="30" value="10">
     </div>
-    <div class="row" style="margin:0 0 10px"><button class="primary" id="bSweep">그래프 그리기</button></div>
-    <canvas id="chart"></canvas>
-    <table id="sweepT" style="margin-top:10px;display:none"><thead><tr><th>밝기</th><th>평균 정확도</th><th>표준편차</th><th>최소</th><th>최대</th></tr></thead><tbody></tbody></table>
+
+    <section class="stage" aria-label="시뮬레이터">
+      <div class="stage-head">
+        <span>AI가 받은 이미지</span>
+        <span class="nav"><button id="bPrev" aria-label="이전 숫자">이전</button><span id="pos">1 / 40</span><button id="bNext" aria-label="다음 숫자">다음</button></span>
+      </div>
+      <div class="screen"><canvas id="stageCv" role="img" aria-label="밝기를 조절한 숫자 이미지"></canvas></div>
+
+      <div class="readrow">
+        <div class="answer" id="answer" aria-live="polite">
+          <div class="lab">AI의 답</div><div class="big" id="pred">-</div>
+          <div class="truth">정답 <b id="truth">-</b></div>
+        </div>
+        <div>
+          <div class="bars" id="bars" aria-hidden="true"></div>
+          <div class="barcap">막대는 0부터 9까지 각 숫자라고 생각하는 정도</div>
+        </div>
+      </div>
+
+      <div class="dial">
+        <div class="dial-row"><label for="rB">밝기 배율</label><output id="vB" for="rB">100%</output></div>
+        <input id="rB" type="range" min="5" max="100" value="100">
+        <div class="presets" id="presets"></div>
+      </div>
+
+      <details class="adv">
+        <summary>노이즈 설정</summary>
+        <div class="adv-body">
+          <div class="dial-row"><label for="rN">노이즈 크기</label><output id="vN" for="rN">2</output></div>
+          <input id="rN" type="range" min="0" max="20" value="2">
+          <p>모든 밝기에서 같은 크기로 더해지는 통제 변인입니다. 0이면 노이즈가 없습니다.</p>
+          <div class="actions" style="margin-top:12px"><button class="btn" id="bSeed">노이즈 새로 뽑기</button></div>
+        </div>
+      </details>
+    </section>
+  </header>
+
+  <section class="band" aria-labelledby="h-chart">
+    <div class="split">
+      <div class="side">
+        <h2 id="h-chart">밝기별 정확도</h2>
+        <p>밝기 100, 70, 50, 30, 20, 10, 5퍼센트에서 정확도를 반복 측정한 결과입니다. 선은 평균, 옅은 띠는 결과가 흔들리는 범위(표준편차)이고, 점선은 지금 슬라이더 위치입니다.</p>
+        <div class="rep">
+          <div class="dial-row"><label for="rR">반복 횟수</label><output id="vR" for="rR">10회</output></div>
+          <input id="rR" type="range" min="1" max="30" value="10">
+        </div>
+      </div>
+      <div>
+        <canvas id="chart" role="img" aria-label="밝기별 정확도 그래프"></canvas>
+        <details class="tbl"><summary>숫자로 보기</summary>
+          <table id="sweepT"><thead><tr><th>밝기</th><th>평균 정확도</th><th>표준편차</th><th>최소</th><th>최대</th></tr></thead><tbody></tbody></table>
+        </details>
+      </div>
+    </div>
   </section>
 
-  <div class="grid2">
-    <section class="card">
-      <h2>내 기록표</h2>
-      <table id="recT"><thead><tr><th>밝기</th><th>노이즈</th><th>정확도</th></tr></thead><tbody></tbody></table>
-      <div class="row"><button id="bCopy">기록 복사하기</button><button id="bClear">기록 지우기</button></div>
-      <textarea id="copyArea" readonly style="display:none"></textarea>
-    </section>
-    <section class="card">
-      <h2>변인 정리</h2>
-      <ul class="vars">
-        <li>조작 변인: 이미지 밝기 배율</li>
-        <li>종속 변인: 분류 정확도(퍼센트)</li>
-        <li>통제 변인: 신경망 모델(은닉 64개), 테스트 이미지 540장, 해상도 8x8, 노이즈 크기, 학습 데이터</li>
-      </ul>
-      <p class="note">밝기를 낮출 때 픽셀 값에 배율을 곱하고 8비트 정수로 내림한 뒤 노이즈를 더합니다. 실제 카메라의 노출이나 센서 특성과는 다르므로 시뮬레이션의 한계로 적을 수 있습니다.</p>
-    </section>
-  </div>
+  <section class="band" aria-labelledby="h-samples">
+    <div class="split">
+      <div class="side">
+        <h2 id="h-samples">40장 한 번에 보기</h2>
+        <p>지금 밝기에서 AI가 각 이미지를 어떻게 읽었는지 보여줍니다. 구리색 글자는 틀린 답이고, 칸을 누르면 위쪽 화면에서 크게 볼 수 있습니다.</p>
+      </div>
+      <div id="samples"></div>
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="h-rec">
+    <div class="split">
+      <div class="side">
+        <h2 id="h-rec">내 기록</h2>
+        <p>원하는 밝기에서 기록하기를 누르면 표에 쌓입니다. 복사해서 보고서나 엑셀에 붙일 수 있어요.</p>
+      </div>
+      <div>
+        <table id="recT"><thead><tr><th>밝기</th><th>노이즈</th><th>정확도</th></tr></thead><tbody></tbody></table>
+        <div class="empty" id="recEmpty">아직 기록이 없습니다.</div>
+        <div class="actions"><button class="btn" id="bCopy">기록 복사하기</button><button class="btn" id="bClear">기록 지우기</button></div>
+        <textarea id="copyArea" readonly hidden></textarea>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="h-design">
+    <div class="split">
+      <div class="side">
+        <h2 id="h-design">실험 설계</h2>
+      </div>
+      <div>
+        <dl class="design">
+          <div><dt>조작 변인</dt><dd>이미지 밝기 배율. 원래 이미지의 밝기 값에 배율을 곱해서 어둡게 만듭니다.</dd></div>
+          <div><dt>종속 변인</dt><dd>분류 정확도. 테스트 이미지 540장 중 정답을 맞힌 비율입니다.</dd></div>
+          <div><dt>통제 변인</dt><dd>AI 모델(숫자를 맞히는 신경망), 테스트 이미지 540장, 이미지 크기 8x8, 노이즈 크기, 반복 횟수.</dd></div>
+        </dl>
+        <div class="notes">
+          <p>모델은 원래 밝기의 이미지로만 학습했고, 테스트 이미지만 어둡게 만들었습니다.</p>
+          <p>실제 카메라는 노출과 센서 특성이 달라서 밝기를 곱해 낮춘 이 방식과 차이가 있습니다. 작은 흑백 숫자 이미지만 사용했다는 점도 한계입니다.</p>
+          <p>시뮬레이션 코드는 AI 도구(Claude)의 도움을 받아 구현했고, 변인 설정과 결과 해석은 직접 했습니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    데이터: UCI Optical Recognition of Handwritten Digits (scikit-learn digits). 파이썬 코드와 측정 결과는
+    <a href="brightness_sim.py">brightness_sim.py</a>, <a href="results.csv">results.csv</a>에서 볼 수 있습니다.
+  </footer>
 </main>
 
 <script>
 "use strict";
-let M=null;            // model + test data
-let seed=12345;        // noise seed
-let sampleIdx=[];
-
 const $=id=>document.getElementById(id);
 const LEVELS=[100,70,50,30,20,10,5];
+const INK=[226,221,231];
+let M=null, seed=12345, sampleIdx=[], cur=0, stats=null, introId=0, sweepTimer=0;
 
+/* 난수와 이미지 변환 */
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-function gauss(r){let u=0,v=0;while(u===0)u=r();v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
-
-// 8x8 원본(0~16)을 밝기 배율과 노이즈로 바꾼 0~255 값 64개
+function gauss(r){let u=0;while(u===0)u=r();const v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
 function darken(px,pct,sd,rng){
   const o=new Array(64);
   for(let i=0;i<64;i++){
@@ -133,117 +285,212 @@ function darken(px,pct,sd,rng){
   }
   return o;
 }
-function predict(x){
-  const W1=M.W1,b1=M.b1,W2=M.W2,b2=M.b2;
-  const h=new Array(64);
+
+/* 신경망 추론 */
+function logits(x){
+  const W1=M.W1,b1=M.b1,W2=M.W2,b2=M.b2,h=new Array(64),o=new Array(10);
   for(let j=0;j<64;j++){let s=b1[j];for(let i=0;i<64;i++)s+=x[i]/255*W1[i][j];h[j]=s>0?s:0}
-  let best=0,bv=-1e9;
-  for(let k=0;k<10;k++){let s=b2[k];for(let j=0;j<64;j++)s+=h[j]*W2[j][k];if(s>bv){bv=s;best=k}}
-  return best;
+  for(let k=0;k<10;k++){let s=b2[k];for(let j=0;j<64;j++)s+=h[j]*W2[j][k];o[k]=s}
+  return o;
 }
+function argmax(a){let b=0;for(let i=1;i<a.length;i++)if(a[i]>a[b])b=i;return b}
+function softmax(a){const m=Math.max(...a),e=a.map(v=>Math.exp(v-m)),s=e.reduce((p,q)=>p+q,0);return e.map(v=>v/s)}
 function accuracy(pct,sd,rng){
   let ok=0;
-  for(let n=0;n<M.X.length;n++){if(predict(darken(M.X[n],pct,sd,rng))===M.y[n])ok++}
+  for(let n=0;n<M.X.length;n++)if(argmax(logits(darken(M.X[n],pct,sd,rng)))===M.y[n])ok++;
   return ok/M.X.length*100;
 }
 
+/* 픽셀 그리기 */
+function sizeCanvas(cv){
+  const dpr=window.devicePixelRatio||1, w=cv.clientWidth;
+  if(!w)return null;
+  if(cv.width!==Math.round(w*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(w*dpr)}
+  return {ctx:cv.getContext("2d"),s:cv.width};
+}
+function drawPixels(cv,x,gapRatio,radiusRatio){
+  const z=sizeCanvas(cv); if(!z)return;
+  const {ctx,s}=z, cell=s/8, gap=cell*gapRatio, r=cell*radiusRatio;
+  ctx.clearRect(0,0,s,s);
+  for(let i=0;i<64;i++){
+    const v=x[i]/255, cx=(i%8)*cell+gap/2, cy=Math.floor(i/8)*cell+gap/2, w=cell-gap;
+    ctx.fillStyle="rgb("+(INK[0]*v|0)+","+(INK[1]*v|0)+","+(INK[2]*v|0)+")";
+    ctx.beginPath();
+    if(ctx.roundRect)ctx.roundRect(cx,cy,w,w,r);else ctx.rect(cx,cy,w,w);
+    ctx.fill();
+  }
+}
+
+/* 화면 갱신 */
 function pickSamples(){
   const idx=[...M.X.keys()];
   for(let i=idx.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]]}
-  sampleIdx=idx.slice(0,40);
+  sampleIdx=idx.slice(0,40); cur=0;
 }
+function state(){return {pct:+$("rB").value, sd:+$("rN").value}}
 
-function render(){
-  const pct=+$("rB").value, sd=+$("rN").value;
-  $("vB").textContent=pct+"%"; $("vN").textContent=sd;
-  // 전체 정확도
+function renderStage(){
+  const {pct,sd}=state(), n=sampleIdx[cur];
+  const x=darken(M.X[n],pct,sd,mulberry32(seed+n));
+  drawPixels($("stageCv"),x,.1,.22);
+  const p=softmax(logits(x)), pred=argmax(p), truth=M.y[n];
+  $("pred").textContent=pred; $("truth").textContent=truth;
+  $("answer").classList.toggle("wrong",pred!==truth);
+  $("pos").textContent=(cur+1)+" / 40";
+  const bars=$("bars").children;
+  for(let k=0;k<10;k++){
+    bars[k].firstChild.style.height=Math.max(3,p[k]*100)+"%";
+    bars[k].classList.toggle("pick",k===pred);
+    bars[k].classList.toggle("truth",k===truth);
+  }
+  document.querySelectorAll(".tile").forEach((t,i)=>t.classList.toggle("sel",i===cur));
+}
+function renderSamples(){
+  const {pct,sd}=state(), box=$("samples");
+  if(box.children.length!==40){
+    box.innerHTML="";
+    sampleIdx.forEach((n,i)=>{
+      const b=document.createElement("button"); b.type="button"; b.className="tile";
+      b.innerHTML='<div class="cv"><canvas></canvas></div><div class="t"></div>';
+      b.onclick=()=>{cancelIntro();cur=i;renderStage();window.scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"})};
+      box.appendChild(b);
+    });
+  }
+  sampleIdx.forEach((n,i)=>{
+    const x=darken(M.X[n],pct,sd,mulberry32(seed+n)), pred=argmax(logits(x)), ok=pred===M.y[n], t=box.children[i];
+    t.classList.toggle("bad",!ok);
+    t.setAttribute("aria-label","예측 "+pred+", 정답 "+M.y[n]);
+    t.querySelector(".t").innerHTML="<b>"+pred+"</b>"+(ok?"":"<s>정답 "+M.y[n]+"</s>");
+    drawPixels(t.querySelector("canvas"),x,.06,.12);
+  });
+}
+function renderScore(){
+  const {pct,sd}=state();
   const a=accuracy(pct,sd,mulberry32(seed));
   $("acc").textContent=a.toFixed(1);
-  $("accSub").textContent="테스트 이미지 "+M.X.length+"장 전체 기준 (맞힌 개수 약 "+Math.round(a/100*M.X.length)+"장)";
-  // 샘플
-  const box=$("samples"); box.innerHTML="";
-  const rng=mulberry32(seed+777);
-  let okc=0;
-  for(const n of sampleIdx){
-    const x=darken(M.X[n],pct,sd,rng), p=predict(x), ok=p===M.y[n]; if(ok)okc++;
-    const c=document.createElement("div"); c.className="cell "+(ok?"ok":"bad");
-    const cv=document.createElement("canvas"); cv.width=8; cv.height=8;
-    const ctx=cv.getContext("2d"), im=ctx.createImageData(8,8);
-    for(let i=0;i<64;i++){const v=x[i];im.data[i*4]=im.data[i*4+1]=im.data[i*4+2]=v;im.data[i*4+3]=255}
-    ctx.putImageData(im,0,0);
-    const t=document.createElement("div"); t.className="t"; t.textContent="예측 "+p+" (정답 "+M.y[n]+")";
-    c.appendChild(cv); c.appendChild(t); box.appendChild(c);
-  }
+  $("cond").textContent="밝기 "+pct+"퍼센트, 노이즈 "+sd;
+  return a;
+}
+let sampleRaf=0;
+function renderAll(){
+  const {pct}=state();
+  $("vB").textContent=pct+"%"; $("vN").textContent=state().sd;
+  $("rB").style.setProperty("--p",((pct-5)/95*100)+"%");
+  $("rN").style.setProperty("--p",(state().sd/20*100)+"%");
+  $("rR").style.setProperty("--p",(($("rR").value-1)/29*100)+"%");
+  document.querySelectorAll("#presets button").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.v===pct)));
+  const a=renderScore();
+  renderStage();
+  drawChart(a);
+  cancelAnimationFrame(sampleRaf); sampleRaf=requestAnimationFrame(renderSamples);
 }
 
-// 그래프
-function drawChart(stats){
-  const cv=$("chart"), dpr=window.devicePixelRatio||1;
-  const w=cv.clientWidth,h=cv.clientHeight; cv.width=w*dpr; cv.height=h*dpr;
-  const g=cv.getContext("2d"); g.scale(dpr,dpr); g.clearRect(0,0,w,h);
-  const L=46,R=14,T=14,B=40, pw=w-L-R, ph=h-T-B;
-  g.font="12px system-ui,sans-serif"; g.fillStyle="#5d667a"; g.strokeStyle="#dde1e9"; g.lineWidth=1;
-  for(let v=0;v<=100;v+=20){
-    const y=T+ph*(1-v/100); g.beginPath(); g.moveTo(L,y); g.lineTo(L+pw,y); g.stroke();
-    g.textAlign="right"; g.fillText(v,L-6,y+4);
+/* 그래프 */
+function computeSweep(){
+  const R=+$("rR").value, sd=+$("rN").value, out=[];
+  for(const l of LEVELS){
+    const arr=[];
+    for(let r=0;r<R;r++)arr.push(accuracy(l,sd,mulberry32(1000+r*97+l)));
+    const m=arr.reduce((a,b)=>a+b,0)/R, v=Math.sqrt(arr.reduce((a,b)=>a+(b-m)**2,0)/R);
+    out.push({l,m,sd:v,min:Math.min(...arr),max:Math.max(...arr)});
   }
-  g.save(); g.translate(12,T+ph/2); g.rotate(-Math.PI/2); g.textAlign="center"; g.fillText("정확도(%)",0,0); g.restore();
-  if(!stats){g.textAlign="center"; g.fillText("그래프 그리기 버튼을 누르세요",L+pw/2,T+ph/2); return}
-  const xs=stats.map((s,i)=>L+pw*(i/(stats.length-1)));
-  g.textAlign="center";
-  stats.forEach((s,i)=>g.fillText(s.l+"%",xs[i],h-B+18));
-  g.fillText("밝기 배율",L+pw/2,h-6);
+  stats=out;
+  const tb=$("sweepT").querySelector("tbody"); tb.innerHTML="";
+  out.forEach(s=>{const tr=document.createElement("tr");tr.innerHTML="<td>"+s.l+"%</td><td>"+s.m.toFixed(1)+"</td><td>"+s.sd.toFixed(1)+"</td><td>"+s.min.toFixed(1)+"</td><td>"+s.max.toFixed(1)+"</td>";tb.appendChild(tr)});
+  drawChart();
+}
+function scheduleSweep(){clearTimeout(sweepTimer);sweepTimer=setTimeout(computeSweep,220)}
+
+function drawChart(curAcc){
+  const cv=$("chart"), dpr=window.devicePixelRatio||1, w=cv.clientWidth, h=cv.clientHeight;
+  if(!w)return;
+  cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+  const g=cv.getContext("2d"); g.scale(dpr,dpr);
+  const L=40,R=18,T=24,B=36,pw=w-L-R,ph=h-T-B;
+  const X=p=>L+pw*(Math.log(100)-Math.log(p))/(Math.log(100)-Math.log(5));
   const Y=v=>T+ph*(1-v/100);
-  g.strokeStyle="#2f6fed"; g.lineWidth=2; g.beginPath();
-  stats.forEach((s,i)=>{i?g.lineTo(xs[i],Y(s.m)):g.moveTo(xs[i],Y(s.m))}); g.stroke();
-  stats.forEach((s,i)=>{
-    g.strokeStyle="#7da3f5"; g.lineWidth=1.5; g.beginPath();
-    g.moveTo(xs[i],Y(Math.min(100,s.m+s.sd))); g.lineTo(xs[i],Y(Math.max(0,s.m-s.sd))); g.stroke();
-    g.fillStyle="#2f6fed"; g.beginPath(); g.arc(xs[i],Y(s.m),4,0,7); g.fill();
-    g.fillStyle="#1c2230"; g.textAlign="center"; g.fillText(s.m.toFixed(1),xs[i],Y(s.m)-10);
+  g.font='12px "Pretendard Variable",Pretendard,"Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  g.lineWidth=1; g.strokeStyle="#46404F"; g.fillStyle="#716579"; g.textAlign="right";
+  for(let v=0;v<=100;v+=25){g.beginPath();g.moveTo(L,Math.round(Y(v))+.5);g.lineTo(L+pw,Math.round(Y(v))+.5);g.stroke();g.fillText(v,L-8,Y(v)+4)}
+  g.textAlign="center"; g.fillStyle="#AAA2B3";
+  LEVELS.forEach(l=>g.fillText(l+"%",X(l),h-12));
+  if(!stats){g.fillStyle="#716579";g.fillText("계산 중...",L+pw/2,T+ph/2);return}
+  // 표준편차 띠
+  g.beginPath();
+  stats.forEach((s,i)=>{const x=X(s.l),y=Y(Math.min(100,s.m+s.sd));i?g.lineTo(x,y):g.moveTo(x,y)});
+  for(let i=stats.length-1;i>=0;i--){const s=stats[i];g.lineTo(X(s.l),Y(Math.max(0,s.m-s.sd)))}
+  g.closePath(); g.fillStyle="rgba(226,221,231,.13)"; g.fill();
+  // 평균선
+  g.beginPath(); g.strokeStyle="#E2DDE7"; g.lineWidth=2; g.lineJoin="round";
+  stats.forEach((s,i)=>{const x=X(s.l),y=Y(s.m);i?g.lineTo(x,y):g.moveTo(x,y)}); g.stroke();
+  // 현재 위치
+  const pct=+$("rB").value, cx=X(pct);
+  g.save(); g.setLineDash([3,4]); g.strokeStyle="#AAA2B3"; g.lineWidth=1;
+  g.beginPath(); g.moveTo(cx,T-6); g.lineTo(cx,T+ph); g.stroke(); g.restore();
+  if(typeof curAcc==="number"){
+    g.beginPath(); g.arc(cx,Y(curAcc),6,0,Math.PI*2); g.fillStyle="#17151C"; g.fill();
+    g.lineWidth=2; g.strokeStyle="#E2DDE7"; g.stroke();
+  }
+  // 점과 값
+  stats.forEach(s=>{
+    g.beginPath(); g.arc(X(s.l),Y(s.m),3.5,0,Math.PI*2); g.fillStyle="#E2DDE7"; g.fill();
+    g.fillStyle="#E2DDE7"; g.textAlign="center"; g.fillText(s.m.toFixed(1),X(s.l),Y(s.m)-12);
   });
 }
 
-function sweep(){
-  const R=+$("rR").value, stats=[];
-  for(const l of LEVELS){
-    const arr=[];
-    for(let r=0;r<R;r++)arr.push(accuracy(l,+$("rN").value,mulberry32(1000+r*97+l)));
-    const m=arr.reduce((a,b)=>a+b,0)/R;
-    const sd=Math.sqrt(arr.reduce((a,b)=>a+(b-m)**2,0)/R);
-    stats.push({l,m,sd,min:Math.min(...arr),max:Math.max(...arr)});
-  }
-  drawChart(stats);
-  const tb=$("sweepT").querySelector("tbody"); tb.innerHTML="";
-  stats.forEach(s=>{const tr=document.createElement("tr");
-    tr.innerHTML="<td>"+s.l+"%</td><td>"+s.m.toFixed(1)+"</td><td>"+s.sd.toFixed(1)+"</td><td>"+s.min.toFixed(1)+"</td><td>"+s.max.toFixed(1)+"</td>";
-    tb.appendChild(tr)});
-  $("sweepT").style.display="table";
+/* 처음 한 번만 보여주는 연출: 어둠에서 100퍼센트까지 밝아짐 */
+function cancelIntro(){if(introId){cancelAnimationFrame(introId);introId=0}}
+function playIntro(){
+  if(matchMedia("(prefers-reduced-motion:reduce)").matches){$("rB").value=100;renderAll();return}
+  const t0=performance.now(), dur=2200;
+  const step=t=>{
+    const k=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-k,3);
+    $("rB").value=Math.round(5+95*e);
+    renderAll();
+    introId=k<1?requestAnimationFrame(step):0;
+  };
+  $("rB").value=5; renderAll();
+  setTimeout(()=>{introId=requestAnimationFrame(step)},500);
 }
 
-// 기록표
+/* 기록 */
 let recs=[];
 function renderRecs(){
   const tb=$("recT").querySelector("tbody"); tb.innerHTML="";
-  recs.forEach(r=>{const tr=document.createElement("tr"); tr.innerHTML="<td>"+r.b+"%</td><td>"+r.n+"</td><td>"+r.a+"</td>"; tb.appendChild(tr)});
+  recs.forEach(r=>{const tr=document.createElement("tr");tr.innerHTML="<td>"+r.b+"%</td><td>"+r.n+"</td><td>"+r.a+"</td>";tb.appendChild(tr)});
+  $("recT").hidden=!recs.length; $("recEmpty").hidden=!!recs.length;
 }
 
-$("rB").oninput=render; $("rN").oninput=render;
-$("rR").oninput=()=>{$("vR").textContent=$("rR").value+"회"};
-$("bSeed").onclick=()=>{seed=Math.floor(Math.random()*1e9);render()};
-$("bSample").onclick=()=>{pickSamples();render()};
-$("bSweep").onclick=()=>{$("bSweep").textContent="계산 중...";setTimeout(()=>{sweep();$("bSweep").textContent="그래프 다시 그리기"},20)};
-$("bRec").onclick=()=>{recs.push({b:+$("rB").value,n:+$("rN").value,a:$("acc").textContent});renderRecs()};
-$("bClear").onclick=()=>{recs=[];renderRecs();$("copyArea").style.display="none"};
+/* 이벤트 */
+function userMove(){cancelIntro();renderAll()}
+$("rB").addEventListener("input",userMove);
+$("rN").addEventListener("input",()=>{cancelIntro();renderAll();scheduleSweep()});
+$("rR").addEventListener("input",()=>{$("vR").textContent=$("rR").value+"회";renderAll();scheduleSweep()});
+$("bSeed").onclick=()=>{cancelIntro();seed=Math.floor(Math.random()*1e9);renderAll()};
+$("bSample").onclick=()=>{cancelIntro();pickSamples();$("samples").innerHTML="";renderAll()};
+$("bPrev").onclick=()=>{cancelIntro();cur=(cur+39)%40;renderStage()};
+$("bNext").onclick=()=>{cancelIntro();cur=(cur+1)%40;renderStage()};
+$("bRec").onclick=()=>{cancelIntro();recs.push({b:state().pct,n:state().sd,a:$("acc").textContent});renderRecs()};
+$("bClear").onclick=()=>{recs=[];renderRecs();$("copyArea").hidden=true};
 $("bCopy").onclick=async()=>{
+  if(!recs.length)return;
   const txt="brightness_pct,noise,accuracy\n"+recs.map(r=>r.b+","+r.n+","+r.a).join("\n");
-  const ta=$("copyArea"); ta.value=txt; ta.style.display="block"; ta.select();
+  const ta=$("copyArea"); ta.value=txt; ta.hidden=false; ta.select();
   try{await navigator.clipboard.writeText(txt)}catch(e){}
 };
-window.addEventListener("resize",()=>{if($("sweepT").style.display!=="none")sweep();else drawChart(null)});
+document.addEventListener("keydown",e=>{
+  if(["INPUT","TEXTAREA","SELECT"].includes(document.activeElement.tagName))return;
+  if(e.key==="ArrowRight"){$("bNext").click()} else if(e.key==="ArrowLeft"){$("bPrev").click()}
+});
+new ResizeObserver(()=>{if(M){renderStage();drawChart();renderSamples()}}).observe(document.body);
 
-fetch("model.json").then(r=>r.json()).then(d=>{M=d;pickSamples();render();drawChart(null)})
- .catch(()=>{$("accSub").textContent="모델 파일을 불러오지 못했습니다."});
+/* 시작 */
+LEVELS.forEach(l=>{const b=document.createElement("button");b.type="button";b.dataset.v=l;b.textContent=l+"%";b.onclick=()=>{cancelIntro();$("rB").value=l;renderAll()};$("presets").appendChild(b)});
+for(let k=0;k<10;k++){const d=document.createElement("div");d.innerHTML="<i></i><span>"+k+"</span>";$("bars").appendChild(d)}
+renderRecs();
+fetch("model.json").then(r=>r.json()).then(d=>{
+  M=d; pickSamples(); playIntro(); setTimeout(computeSweep,60);
+}).catch(()=>{$("cond").textContent="모델 파일을 불러오지 못했습니다."});
 </script>
 </body>
 </html>
